@@ -1,0 +1,84 @@
+# Local / demo stack: Postgres + Mosquitto + backend + frontend.
+#   docker compose up -d --build     → http://localhost:3000
+# Production (GHCR images + Caddy TLS) is docker-compose.prod.yml, driven by ops/deploy.sh — see docs/DEPLOY.md
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: woodstar
+      POSTGRES_USER: ${DB_USERNAME:-woodstar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-woodstar}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-woodstar} -d woodstar"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports:
+      # Shellys on site connect here. Expose publicly only behind TLS/VPN in production.
+      - "1883:1883"
+    volumes:
+      - ./infra/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ${MQTT_PASSWD_FILE:-./infra/mosquitto/passwd.dev}:/mosquitto/config/passwd:ro
+      - mosquitto_data:/mosquitto/data
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_URL: jdbc:postgresql://db:5432/woodstar
+      DB_USERNAME: ${DB_USERNAME:-woodstar}
+      DB_PASSWORD: ${DB_PASSWORD:-woodstar}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      PAYMENTS_PROVIDER: ${PAYMENTS_PROVIDER:-fake}
+      MAKSEKESKUS_SHOP_ID: ${MAKSEKESKUS_SHOP_ID:-}
+      MAKSEKESKUS_SECRET_KEY: ${MAKSEKESKUS_SECRET_KEY:-}
+      MAKSEKESKUS_BASE_URL: ${MAKSEKESKUS_BASE_URL:-https://api.maksekeskus.ee/v1}
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      MQTT_USERNAME: ${MQTT_USERNAME:-backend}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-backend}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@woodstar.ee}
+      PICKUP_DEADLINE_HOURS: ${PICKUP_DEADLINE_HOURS:-48}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # localhost only: in production Caddy is the public entry point and Docker's
+      # published ports bypass ufw, so nothing else may bind 0.0.0.0.
+      - "127.0.0.1:3000:80"
+
+volumes:
+  postgres_data:
+  mosquitto_data:

@@ -1,0 +1,33 @@
+# Production overlay, used by ops/deploy.sh:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env up -d
+# Images come from GHCR (built by .github/workflows/deploy.yml) instead of being built
+# on the server, and Caddy terminates TLS for $DOMAIN. Postgres and the frontend stay
+# bound to 127.0.0.1 in the base file, so only 80/443 (Caddy) and 1883 (MQTT) are public.
+services:
+  backend:
+    image: ${IMAGE_PREFIX:?}/woodstar-backend:${IMAGE_TAG:?}
+    pull_policy: always
+
+  frontend:
+    image: ${IMAGE_PREFIX:?}/woodstar-frontend:${IMAGE_TAG:?}
+    pull_policy: always
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

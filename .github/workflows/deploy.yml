@@ -1,0 +1,171 @@
+name: Deploy
+
+# Builds both images, pushes them to GHCR, then updates the Hetzner host over SSH.
+# Runs automatically after a green CI on main, or by hand (optionally with an
+# older image tag to roll back to).
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (default: the commit SHA of this run). Use an older SHA to roll back."
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    # For workflow_run only continue when CI passed.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      prefix: ${{ steps.meta.outputs.prefix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - id: meta
+        name: Resolve image tag and registry prefix
+        run: |
+          owner="${{ github.repository_owner }}"
+          echo "prefix=ghcr.io/${owner,,}" >> "$GITHUB_OUTPUT"
+          tag="${{ inputs.image_tag }}"
+          [ -n "$tag" ] || tag="${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "deploying tag $tag"
+
+      - name: Skip build when redeploying an existing tag
+        id: exists
+        if: inputs.image_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          docker login ghcr.io -u "${{ github.actor }}" -p "$GH_TOKEN" >/dev/null 2>&1
+          docker manifest inspect "${{ steps.meta.outputs.prefix }}/woodstar-backend:${{ steps.meta.outputs.tag }}" >/dev/null 2>&1 \
+            && docker manifest inspect "${{ steps.meta.outputs.prefix }}/woodstar-frontend:${{ steps.meta.outputs.tag }}" >/dev/null 2>&1
+          if [ $? -eq 0 ]; then echo "found=true" >> "$GITHUB_OUTPUT"; echo "images already exist, skipping build"; else echo "found=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.exists.outputs.found != 'true'
+
+      - uses: docker/login-action@v3
+        if: steps.exists.outputs.found != 'true'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend
+        if: steps.exists.outputs.found != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.prefix }}/woodstar-backend:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.prefix }}/woodstar-backend:latest
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build and push frontend
+        if: steps.exists.outputs.found != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.prefix }}/woodstar-frontend:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.prefix }}/woodstar-frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Check required secrets and variables
+        env:
+          PROD_HOST: ${{ vars.PROD_HOST }}
+          DOMAIN: ${{ vars.DOMAIN }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          MQTT_PASSWORD: ${{ secrets.MQTT_PASSWORD }}
+          MAKSEKESKUS_SHOP_ID: ${{ secrets.MAKSEKESKUS_SHOP_ID }}
+          MAKSEKESKUS_SECRET_KEY: ${{ secrets.MAKSEKESKUS_SECRET_KEY }}
+        run: |
+          missing=""
+          for v in PROD_HOST DOMAIN SSH_USER SSH_KEY GHCR_PAT DB_PASSWORD ADMIN_PASSWORD MQTT_PASSWORD \
+                   MAKSEKESKUS_SHOP_ID MAKSEKESKUS_SECRET_KEY; do
+            eval "val=\${$v:-}"
+            [ -n "$val" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::missing repository secrets/variables:$missing (see docs/DEPLOY.md)"
+            exit 1
+          fi
+          echo "all required settings are present"
+
+      - name: Copy release files to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.PROD_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yml,docker-compose.prod.yml,infra/caddy/Caddyfile,infra/mosquitto/mosquitto.conf,infra/mosquitto/add-user.sh,ops/*.sh"
+          target: /opt/woodstar
+
+      - name: Bootstrap the host and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.tag }}
+          IMAGE_PREFIX: ${{ needs.build.outputs.prefix }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GH_ACTOR: ${{ github.actor }}
+          DOMAIN: ${{ vars.DOMAIN }}
+          ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          MAKSEKESKUS_BASE_URL: ${{ vars.MAKSEKESKUS_BASE_URL }}
+          PICKUP_DEADLINE_HOURS: ${{ vars.PICKUP_DEADLINE_HOURS }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          MQTT_PASSWORD: ${{ secrets.MQTT_PASSWORD }}
+          MAKSEKESKUS_SHOP_ID: ${{ secrets.MAKSEKESKUS_SHOP_ID }}
+          MAKSEKESKUS_SECRET_KEY: ${{ secrets.MAKSEKESKUS_SECRET_KEY }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        with:
+          host: ${{ vars.PROD_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: IMAGE_TAG,IMAGE_PREFIX,GHCR_PAT,GH_ACTOR,DOMAIN,ADMIN_USERNAME,SMTP_HOST,SMTP_PORT,MAIL_FROM,MAKSEKESKUS_BASE_URL,PICKUP_DEADLINE_HOURS,DB_PASSWORD,ADMIN_PASSWORD,MQTT_PASSWORD,MAKSEKESKUS_SHOP_ID,MAKSEKESKUS_SECRET_KEY,SMTP_USERNAME,SMTP_PASSWORD
+          script: |
+            set -eu
+            cd /opt/woodstar
+            chmod +x ops/*.sh infra/mosquitto/add-user.sh
+            sudo -E ops/bootstrap.sh
+            sudo -E ops/deploy.sh "$IMAGE_TAG"

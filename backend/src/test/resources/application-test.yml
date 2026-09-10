@@ -1,0 +1,17 @@
+woodstar:
+  seed-demo-data: false
+  payments:
+    provider: fake
+    maksekeskus:
+      shop-id: test-shop
+      secret-key: test-secret
+  mqtt:
+    enabled: false
+  order:
+    reservation-ttl-minutes: 15
+  pickup:
+    reopen-window-minutes: 30
+    max-opens: 5
+spring:
+  mail:
+    host: ""

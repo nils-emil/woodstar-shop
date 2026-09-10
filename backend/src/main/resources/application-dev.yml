@@ -1,0 +1,10 @@
+woodstar:
+  seed-demo-data: true
+  payments:
+    provider: ${PAYMENTS_PROVIDER:fake}
+  mqtt:
+    enabled: ${MQTT_ENABLED:false}
+
+logging:
+  level:
+    ee.woodstar: DEBUG

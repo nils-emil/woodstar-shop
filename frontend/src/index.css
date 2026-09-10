@@ -1,0 +1,240 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/fraunces";
+
+@theme {
+  /* brand accent: burnt orange, used sparingly */
+  --color-accent-50: #fdf4ee;
+  --color-accent-100: #fbe6d8;
+  --color-accent-200: #f6c9ad;
+  --color-accent-300: #eea578;
+  --color-accent-400: #e57f45;
+  --color-accent-500: #d9601f;
+  --color-accent-600: #c04e16;
+  --color-accent-700: #9c3f13;
+  --color-accent-800: #7c3412;
+
+  /* warm neutrals */
+  --color-canvas: #f7f4ef;
+  --color-surface: #ffffff;
+  --color-line: #e8e1d7;
+  --color-line-strong: #d6cdc0;
+  --color-ink: #1b1613;
+  --color-ink-2: #4a413a;
+  --color-ink-3: #7d7269;
+  --color-ink-4: #a89d92;
+
+  --color-success-50: #eef7ee;
+  --color-success-500: #2f8f4e;
+  --color-success-700: #1f6b39;
+  --color-warn-50: #fff7e6;
+  --color-warn-500: #d98b0f;
+  --color-warn-700: #9a6205;
+  --color-danger-50: #fdeeed;
+  --color-danger-500: #d0433b;
+  --color-danger-700: #a5302a;
+
+  /* kept for admin badges */
+  --color-wood-50: #fbf6ef;
+  --color-wood-100: #f4e8d6;
+  --color-wood-200: #e8cfae;
+  --color-wood-300: #d9b184;
+  --color-wood-400: #c8905b;
+  --color-wood-500: #b07a45;
+  --color-wood-600: #92602f;
+  --color-wood-700: #6b3f1d;
+  --color-wood-800: #4d2d15;
+  --color-wood-900: #33200f;
+  --color-bark: #1b1613;
+  --color-cream: #f7f4ef;
+  --color-moss-500: #2f8f4e;
+  --color-moss-600: #1f6b39;
+  --color-ember-500: #d0433b;
+  --color-ember-600: #a5302a;
+  --color-amber-500: #d98b0f;
+  --color-night-900: #1b1613;
+  --color-night-950: #120e0c;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-card: 0 1px 2px rgb(27 22 19 / 0.04), 0 8px 24px -12px rgb(27 22 19 / 0.12);
+  --shadow-card-hover: 0 1px 2px rgb(27 22 19 / 0.05), 0 16px 40px -16px rgb(27 22 19 / 0.22);
+  --shadow-cta: 0 10px 24px -10px rgb(192 78 22 / 0.55);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-canvas text-ink font-sans antialiased;
+  margin: 0;
+  min-height: 100dvh;
+  font-feature-settings: "cv11", "ss01", "tnum";
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 96, "SOFT" 20, "WONK" 0;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Ambient background: slow, quiet, no particles ---------- */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+.ambient::before,
+.ambient::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform;
+}
+.ambient::before {
+  width: 70vmax;
+  height: 70vmax;
+  left: -25vmax;
+  top: -35vmax;
+  background: radial-gradient(closest-side, rgb(217 96 31 / 0.16), transparent 70%);
+  animation: ambient-a 28s ease-in-out infinite alternate;
+}
+.ambient::after {
+  width: 60vmax;
+  height: 60vmax;
+  right: -30vmax;
+  bottom: -30vmax;
+  background: radial-gradient(closest-side, rgb(200 144 91 / 0.18), transparent 70%);
+  animation: ambient-b 34s ease-in-out infinite alternate;
+}
+/* faint line texture, static */
+.ambient-lines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: repeating-linear-gradient(
+    115deg,
+    transparent 0,
+    transparent 22px,
+    rgb(27 22 19 / 0.035) 22px,
+    rgb(27 22 19 / 0.035) 23px
+  );
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.9), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.9), transparent 70%);
+}
+@keyframes ambient-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(8vw, 10vh, 0) scale(1.08); }
+}
+@keyframes ambient-b {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-8vw, -10vh, 0) scale(1.1); }
+}
+
+/* ---------- Surfaces ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-card);
+}
+.card-interactive {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card-interactive:hover:not(:disabled) {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-line-strong);
+  transform: translateY(-1px);
+}
+.card-selected {
+  border-color: var(--color-accent-500);
+  box-shadow: 0 0 0 3px rgb(217 96 31 / 0.15), var(--shadow-card);
+}
+
+.btn-cta {
+  color: #fff;
+  background: var(--color-accent-600);
+  box-shadow: var(--shadow-cta);
+  transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+.btn-cta:hover:not(:disabled) { background: var(--color-accent-700); }
+.btn-cta:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+
+/* ---------- Motion ---------- */
+
+.fade-up {
+  opacity: 0;
+  animation: fade-up 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* calm attention pulse on the primary open button */
+.pulse-soft {
+  animation: pulse-soft 2.2s ease-in-out infinite;
+}
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(192 78 22 / 0.35), var(--shadow-cta); }
+  50% { box-shadow: 0 0 0 14px rgb(192 78 22 / 0), var(--shadow-cta); }
+}
+
+/* locker door swing */
+.door-scene { perspective: 700px; }
+.door {
+  transform-origin: left center;
+  animation: door-open 0.9s cubic-bezier(0.3, 0.8, 0.3, 1) 0.15s forwards;
+}
+@keyframes door-open {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-100deg); }
+}
+.door-inside {
+  opacity: 0;
+  animation: door-inside 0.6s ease-out 0.55s forwards;
+}
+@keyframes door-inside {
+  to { opacity: 1; }
+}
+
+/* waiting indicator */
+.breathe { animation: breathe 2s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, transparent, var(--color-accent-400), transparent);
+  background-size: 50% 100%;
+  animation: progress 1.4s linear infinite;
+}
+@keyframes progress {
+  from { background-position: -50% 0; }
+  to { background-position: 150% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient::before, .ambient::after, .pulse-soft, .breathe, .progress-bar { animation: none !important; }
+  .fade-up { animation-duration: 0.01s; animation-delay: 0s; }
+}

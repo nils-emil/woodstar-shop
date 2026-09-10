@@ -1,0 +1,6 @@
+# Production reverse proxy. DOMAIN comes from .env (e.g. woodstar.ee).
+# Caddy obtains and renews Let's Encrypt certificates automatically.
+{$DOMAIN} {
+    encode zstd gzip
+    reverse_proxy frontend:80
+}
