@@ -45,7 +45,6 @@ Repository → Settings → Secrets and variables → Actions.
 
 | Secret | Value |
 |---|---|
-| `SSH_USER` | `root` |
 | `SSH_KEY` | private key generated above (full PEM text) |
 | `GHCR_PAT` | a classic personal access token with `read:packages`, used by the server to pull images |
 | `MAKSEKESKUS_SHOP_ID` | optional; from the Maksekeskus merchant portal |
@@ -57,6 +56,7 @@ Repository → Settings → Secrets and variables → Actions.
 | Variable | Value |
 |---|---|
 | `PROD_HOST` | server IP or hostname |
+| `SSH_USER` | `root` (variable or secret) |
 | `DB_PASSWORD` | strong random string (may also be a secret; a variable is visible in settings and logs) |
 | `ADMIN_PASSWORD` | initial admin password, seeded only when the admin table is empty (variable or secret) |
 | `MQTT_PASSWORD` | strong random string for the backend's broker user (variable or secret) |

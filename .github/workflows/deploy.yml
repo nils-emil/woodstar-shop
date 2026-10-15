@@ -107,7 +107,7 @@ jobs:
         env:
           PROD_HOST: ${{ vars.PROD_HOST }}
           DOMAIN: ${{ vars.DOMAIN }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: ${{ vars.SSH_USER || secrets.SSH_USER }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
           DB_PASSWORD: ${{ vars.DB_PASSWORD || secrets.DB_PASSWORD }}
@@ -134,7 +134,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ vars.PROD_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          username: ${{ vars.SSH_USER || secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "docker-compose.yml,docker-compose.prod.yml,infra/caddy/Caddyfile,infra/mosquitto/mosquitto.conf,infra/mosquitto/add-user.sh,ops/*.sh"
           target: /opt/woodstar
@@ -162,7 +162,7 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         with:
           host: ${{ vars.PROD_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          username: ${{ vars.SSH_USER || secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           envs: IMAGE_TAG,IMAGE_PREFIX,GHCR_PAT,GH_ACTOR,DOMAIN,ADMIN_USERNAME,SMTP_HOST,SMTP_PORT,MAIL_FROM,MAKSEKESKUS_BASE_URL,PICKUP_DEADLINE_HOURS,DB_PASSWORD,ADMIN_PASSWORD,MQTT_PASSWORD,MAKSEKESKUS_SHOP_ID,MAKSEKESKUS_SECRET_KEY,SMTP_USERNAME,SMTP_PASSWORD
           script: |
