@@ -16,6 +16,7 @@ Read `docs/SPEC.md` before changing domain logic; it is the contract between bac
 - Tokens, `.btn-*`, `.field`, `.head`/`.lead`/`.small` live in `frontend/src/index.css`. Admin keeps a solid `ink` sidebar with the accent on the active link.
 
 ## Rules
+- Git: never create branches. Always commit and push directly on `main`.
 - Locker and order state transitions live in the services only; controllers never mutate state directly.
 - Every visible UI string goes through `t()` with both `et` and `en` keys in `frontend/src/i18n/`.
 - Money is integer cents, prices include 24 % VAT. Timestamps are `Instant` / `TIMESTAMPTZ`.
