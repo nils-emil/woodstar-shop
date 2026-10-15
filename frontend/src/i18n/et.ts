@@ -1,38 +1,25 @@
 export const et = {
   // common
   appName: 'Woodstar',
-  tagline: 'Küttepuud 24/7 iseteeninduskapist',
-  heroLead: 'Vali kott, maksa telefonis ja ava kapp oma lingist. Ilma ootamise ja helistamiseta.',
-  securePayment: 'Turvaline makse',
-  openWithPhone: 'Avad telefoniga',
   paymentBy: 'Makse: Maksekeskus',
-  footerNote: 'Küttepuude iseteenindus',
   loading: 'Laadin…',
   retry: 'Proovi uuesti',
-  back: 'Tagasi',
   save: 'Salvesta',
   cancel: 'Tühista',
   close: 'Sulge',
   confirm: 'Kinnita',
   edit: 'Muuda',
-  add: 'Lisa',
-  yes: 'Jah',
-  no: 'Ei',
   error: 'Midagi läks valesti',
   networkError: 'Ühendus serveriga ebaõnnestus',
-  notFound: 'Ei leitud',
   language: 'Keel',
   vatIncluded: 'sis. km 24%',
   nothingHere: 'Siin pole veel midagi',
 
   // storefront
   chooseSite: 'Vali asukoht',
-  chooseProduct: 'Vali toode',
-  yourDetails: 'Sinu andmed',
   email: 'E-post',
   emailHint: 'Saadame avamislingi sellele aadressile',
   phone: 'Telefon (valikuline)',
-  buy: 'Osta',
   buyFor: 'Maksa {price}',
   available: '{n} saadaval',
   soldOut: 'Läbi müüdud',
@@ -41,12 +28,28 @@ export const et = {
   paymentCancelled: 'Makse katkestati. Saad tellimist uuesti alustada.',
   redirectingToPayment: 'Suunan maksma…',
   howItWorks: 'Kuidas see töötab',
-  step1: 'Vali asukoht ja toode',
-  step2: 'Maksa telefonis',
-  step3: 'Ava kapiuks lingilt ja võta puud',
+  step1: 'Vali kott ja maksa telefonis',
+  step2: 'Avamislink tuleb e-postile',
+  step3: 'Kapi juures vajuta lingil „Ava kapiuks“',
   invalidEmail: 'Palun sisesta korrektne e-posti aadress',
-  changeSite: 'Muuda asukohta',
   noSites: 'Ühtegi asukohta pole hetkel saadaval.',
+
+  // storefront: hero card
+  heroTitle: 'Küttepuud iseteeninduskapist',
+  heroFrom: '40 L kott alates {price}',
+  heroOpen: 'Avatud ööpäev läbi',
+  photo: 'Foto',
+
+  // storefront: how it works
+
+  // storefront: coupon
+  chooseBag: 'Vali kott',
+
+  // storefront: footer
+  footerStatement: 'Kuivad küttepuud iseteeninduskapist, ööpäev läbi.',
+  footerLostLink: 'Link kadunud? Otsi kirja saatjalt',
+
+  caption_birch: 'Kasepuud riidas, Himanka, Soome',
 
   // order page
   waitingForPayment: 'Ootame makse kinnitust…',
@@ -66,7 +69,6 @@ export const et = {
   // pickup page
   locker: 'Kapp',
   product: 'Toode',
-  location: 'Asukoht',
   opening: 'Avan…',
   doorOpened: 'Uks on lahti!',
   doorOpenedHint: 'Võta puud ja sulge uks korralikult.',
@@ -174,12 +176,15 @@ export const et = {
   stock: 'Täida',
   stockWith: 'Täida tootega',
   empty: 'Tühjenda',
+  soldEmptied: 'Märgi tühjendatuks',
+  soldEmptiedConfirm: 'Kapp {label} märgitakse tühjaks ja tellimus {number} kätte saaduks. Ostja link ei ava enam ust.',
+  soldRestock: 'Märgi uuesti täidetuks',
+  soldRestockConfirm: 'Kott jääb kappi {label} ja läheb uuesti müüki. Tellimus {number} aegub ja ostja link ei ava enam ust. Raha ei tagastata – tagastamiseks tühista tellimus.',
   markOutOfOrder: 'Märgi rikkis',
   markWorking: 'Märgi korras',
   openDoor: 'Ava uks',
   openDoorConfirm: 'Kas oled kindel, et soovid kapi {label} ukse avada?',
   doorOpenSent: 'Uks avatud',
-  doorOpenFailed: 'Ukse avamine ebaõnnestus',
   currentOrder: 'Aktiivne tellimus',
   stockedAt: 'Täidetud',
   noProduct: 'Toodet pole',

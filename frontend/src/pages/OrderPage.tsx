@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { CheckCircle2, KeyRound, MapPin, CreditCard } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { api, isApiError } from '@/api/client'
 import type { PublicOrder } from '@/api/types'
 import { Alert } from '@/components/Alert'
-import { formatDateTime, useT } from '@/i18n'
+import { formatDateTime, formatPrice, useT } from '@/i18n'
 
 export function OrderPage() {
   const { id = '' } = useParams()
@@ -40,75 +40,72 @@ export function OrderPage() {
     }
   }, [id])
 
-  if (notFound) return <Alert tone="error" className="mt-6">{t('orderNotFound')}</Alert>
+  if (notFound) return <Alert tone="error" className="mt-10">{t('orderNotFound')}</Alert>
 
   if (!order || order.state === 'PENDING_PAYMENT') {
     return (
-      <div className="pt-16 fade-up">
-        <div className="card rounded-2xl p-8 flex flex-col items-center text-center gap-5 overflow-hidden relative">
-          <div className="progress-bar absolute top-0 left-0 right-0 h-1" />
-          <span className="breathe grid place-items-center h-16 w-16 rounded-full bg-accent-50 text-accent-600">
-            <CreditCard size={30} />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold text-ink">{t('waitingForPayment')}</h1>
-            <p className="mt-2 text-sm text-ink-3 max-w-xs">{t('waitingHint')}</p>
-          </div>
-          {netError && <Alert tone="warning">{t('networkError')}</Alert>}
+      <div className="pt-16 grid gap-6 enter">
+        <h1 className="head">{t('waitingForPayment')}</h1>
+        <p className="lead max-w-[30ch]">{t('waitingHint')}</p>
+        <div className="flex gap-1.5" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="ticking block h-10 w-7 bg-ink" style={{ animationDelay: `${i * 200}ms` }} />
+          ))}
         </div>
+        {netError && <Alert tone="warning">{t('networkError')}</Alert>}
       </div>
     )
   }
 
-  if (order.state === 'EXPIRED') return <Alert tone="warning" className="mt-6">{t('orderExpired')}</Alert>
-  if (order.state === 'CANCELLED') return <Alert tone="warning" className="mt-6">{t('orderCancelled')}</Alert>
-  if (order.state === 'REFUNDED') return <Alert tone="warning" className="mt-6">{t('orderRefunded')}</Alert>
+  if (order.state === 'EXPIRED') return <Alert tone="warning" className="mt-10">{t('orderExpired')}</Alert>
+  if (order.state === 'CANCELLED') return <Alert tone="warning" className="mt-10">{t('orderCancelled')}</Alert>
+  if (order.state === 'REFUNDED') return <Alert tone="warning" className="mt-10">{t('orderRefunded')}</Alert>
 
   return (
-    <div className="space-y-5 pt-8">
-      <div className="flex flex-col items-center text-center gap-2 fade-up" style={{ ['--i' as string]: 0 }}>
-        <span className="grid place-items-center h-16 w-16 rounded-full bg-success-50 text-success-500 animate-pop-in">
-          <CheckCircle2 size={36} />
-        </span>
-        <h1 className="text-2xl font-bold text-ink mt-1">{t('paymentReceived')}</h1>
-        <p className="text-sm text-ink-3">
-          {t('orderNumber')} <span className="font-mono font-semibold text-ink">{order.orderNumber}</span>
-        </p>
-      </div>
+    <div className="pt-10 grid gap-8">
+      <h1 className="head enter">{t('paymentReceived')}</h1>
 
-      <div className="card rounded-2xl fade-up" style={{ ['--i' as string]: 1 }}>
-        <div className="p-5 flex items-center gap-5">
-          <div className="grid place-items-center h-20 w-20 rounded-xl bg-accent-50 shrink-0">
-            <span className="font-display text-4xl font-medium text-ink">{order.lockerLabel}</span>
+      <div className="bg-paper p-6 enter" style={{ ['--i' as string]: 1 }}>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="font-semibold">{t('yourLocker')}</p>
+            <p className="display text-[7rem]">{order.lockerLabel}</p>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-semibold text-accent-600 uppercase tracking-wide">{t('yourLocker')}</div>
-            <div className="font-semibold text-ink mt-0.5">{order.productName}</div>
-            <div className="flex items-start gap-1.5 text-sm text-ink-3 mt-1.5">
-              <MapPin size={15} className="shrink-0 mt-0.5" />
-              <span>{order.siteName}, {order.siteAddress}</span>
-            </div>
-          </div>
+          <p className="pb-3 text-right font-semibold">
+            {t('orderNumber')}
+            <br />
+            {order.orderNumber}
+          </p>
         </div>
-        {order.pickupDeadline && (
-          <div className="border-t border-line px-5 py-3 text-sm flex items-center justify-between">
-            <span className="text-ink-3">{t('pickupBy')}</span>
-            <span className="font-semibold text-ink">{formatDateTime(order.pickupDeadline, locale)}</span>
-          </div>
-        )}
+        <dl className="mt-6 grid gap-3 m-0">
+          <ReceiptRow what={order.productName} value={formatPrice(order.priceCents)} />
+          <ReceiptRow what={order.siteName} value={order.siteAddress} />
+          {order.pickupDeadline && (
+            <ReceiptRow what={t('pickupBy')} value={formatDateTime(order.pickupDeadline, locale)} />
+          )}
+        </dl>
       </div>
 
       {order.pickupToken && (
         <Link
           to={`/pickup/${order.pickupToken}`}
-          className="btn-cta fade-up flex items-center justify-center gap-3 h-16 rounded-2xl text-lg font-bold"
+          className="btn btn-accent !min-h-16 !text-xl justify-between enter"
           style={{ ['--i' as string]: 2 }}
         >
-          <KeyRound size={22} />
           {t('goToPickup')}
+          <ArrowRight size={24} aria-hidden="true" />
         </Link>
       )}
-      <p className="text-center text-sm text-ink-3 fade-up" style={{ ['--i' as string]: 3 }}>{t('pickupLinkSent')}</p>
+      <p className="enter" style={{ ['--i' as string]: 3 }}>{t('pickupLinkSent')}</p>
+    </div>
+  )
+}
+
+function ReceiptRow({ what, value }: { what: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <dt>{what}</dt>
+      <dd className="m-0 font-semibold text-right">{value}</dd>
     </div>
   )
 }

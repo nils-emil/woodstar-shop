@@ -1,4 +1,5 @@
 import type { SelectHTMLAttributes } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 interface Props extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
@@ -8,14 +9,13 @@ export function Select({ label, className = '', id, children, ...rest }: Props) 
   const selectId = id ?? rest.name
   return (
     <label className="block" htmlFor={selectId}>
-      {label && <span className="mb-1.5 block text-sm font-semibold text-wood-800">{label}</span>}
-      <select
-        id={selectId}
-        {...rest}
-        className={`h-12 w-full rounded-xl border border-wood-200 bg-white px-3.5 text-base text-bark focus:outline-none focus:ring-2 focus:ring-wood-400 ${className}`}
-      >
-        {children}
-      </select>
+      {label && <span className="mb-1.5 block text-[15px] font-semibold text-ink">{label}</span>}
+      <span className="select-wrap block">
+        <select id={selectId} {...rest} className={`field ${className}`}>
+          {children}
+        </select>
+        <ChevronDown size={18} aria-hidden="true" />
+      </span>
     </label>
   )
 }

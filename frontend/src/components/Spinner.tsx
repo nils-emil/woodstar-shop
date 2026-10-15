@@ -9,14 +9,14 @@ export function Spinner({ size = 20, className = '' }: { size?: number; classNam
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
-      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
     </svg>
   )
 }
 
 export function PageSpinner() {
   return (
-    <div className="flex justify-center py-16 text-wood-500">
+    <div className="flex justify-center py-24 text-ink">
       <Spinner size={32} />
     </div>
   )

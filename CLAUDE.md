@@ -10,9 +10,10 @@ Read `docs/SPEC.md` before changing domain logic; it is the contract between bac
 - `infra/` Mosquitto + Caddy config. Compose files at repo root.
 
 ## Design system (frontend)
-- Clean, light, premium: warm off-white canvas, white cards (`card`, `card-interactive`, `card-selected`), one burnt-orange accent (`accent-*`) used for the CTA (`btn-cta`), icons and selection only. Text uses the `ink` scale. Inter for UI, Fraunces (`font-display`) only for the hero headline and locker labels.
-- Motion is quiet: `<Backdrop />` is two slowly drifting gradients plus a static line texture; entrance is `fade-up` with `--i` stagger; the open button uses `pulse-soft`; success uses the small `door` swing. No particles, grain, glass or neon. The user rejected a dark "campfire" look as unprofessional on 2026-09-10.
-- Tokens, keyframes and surface classes live in `frontend/src/index.css`. Admin keeps a solid dark sidebar (`night-900`) with the same accent; content areas are light.
+- Simple and functional: it is a pay-to-buy shop, not a showcase. The user rejected an art-directed version (pinned hero card, passing photos, receipt/coupon sections) on 2026-10-15 as "an art show".
+- Palette "Stone and blueprint": stone ground `canvas`, tone steps `surface` and `paper`, near-black `ink`, one blue `accent-600` for the primary action and selection only. One typeface: Schibsted Grotesk.
+- Taste-skill house rules hold (`npx -y node@22 ~/.claude/skills/taste-skill/scripts/lint.mjs frontend/src` must stay at 0 FAIL): square corners, no shadows at rest (dialogs only), no gradients, no hairlines outside tables/form fields, no monospace, no uppercase tracked labels. Surfaces differ by tone, not lines. Avoid `tabular-nums` on prices/dates: it widens commas and colons in this face.
+- Tokens, `.btn-*`, `.field`, `.head`/`.lead`/`.small` live in `frontend/src/index.css`. Admin keeps a solid `ink` sidebar with the accent on the active link.
 
 ## Rules
 - Locker and order state transitions live in the services only; controllers never mutate state directly.

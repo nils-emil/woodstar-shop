@@ -1,8 +1,9 @@
 import type { HTMLAttributes } from 'react'
 
+/** A filled surface one tone step off the ground: no outline, no shadow. */
 export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className={`rounded-2xl bg-white border border-wood-200/70 shadow-sm ${className}`}>
+    <div {...rest} className={`bg-paper ${className}`}>
       {children}
     </div>
   )
@@ -10,7 +11,7 @@ export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLD
 
 export function CardBody({ className = '', children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className={`p-4 sm:p-5 ${className}`}>
+    <div {...rest} className={`p-5 sm:p-6 ${className}`}>
       {children}
     </div>
   )

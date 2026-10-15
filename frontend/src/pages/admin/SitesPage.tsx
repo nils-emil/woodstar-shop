@@ -23,7 +23,7 @@ export function SitesPage() {
   return (
     <div>
       <PageHeader title={t('sites')}>
-        <Button icon={<Plus size={18} />} onClick={() => setEditing('new')}>{t('addSite')}</Button>
+        <Button variant="cta" icon={<Plus size={18} />} onClick={() => setEditing('new')}>{t('addSite')}</Button>
       </PageHeader>
       {sites.error && <Alert tone="error" className="mb-4">{sites.error}</Alert>}
       {sites.loading && !sites.data ? (
@@ -31,21 +31,21 @@ export function SitesPage() {
       ) : !sites.data?.length ? (
         <Alert tone="info">{t('nothingHere')}</Alert>
       ) : (
-        <Card className="divide-y divide-wood-100">
+        <div className="grid gap-1">
           {sites.data.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-              <MapPin className="text-wood-500 shrink-0" />
+            <Card key={s.id} className="flex items-center gap-4 px-5 py-4">
+              <MapPin className="text-ink-3 shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-bold flex items-center gap-2">
+                <div className="font-bold text-[17px] flex items-center gap-2">
                   {s.name}
                   {!s.active && <Badge tone="neutral">{t('inactive')}</Badge>}
                 </div>
-                <div className="text-sm text-stone-500 truncate">{s.address}</div>
+                <div className="text-[15px] text-ink-3 truncate">{s.address}</div>
               </div>
-              <Button variant="ghost" size="sm" icon={<Pencil size={16} />} onClick={() => setEditing(s)}>{t('edit')}</Button>
-            </div>
+              <Button variant="secondary" size="sm" icon={<Pencil size={16} />} onClick={() => setEditing(s)}>{t('edit')}</Button>
+            </Card>
           ))}
-        </Card>
+        </div>
       )}
       <SiteForm
         site={editing === 'new' ? null : editing}
@@ -99,8 +99,8 @@ function SiteForm({ site, open, onClose, onSaved }: { site: AdminSite | null; op
         <Checkbox label={t('active')} checked={form.active} onChange={(e) => set('active', e.target.checked)} />
         {error && <Alert tone="error">{error}</Alert>}
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>{t('cancel')}</Button>
-          <Button type="submit" loading={saving}>{t('save')}</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('cancel')}</Button>
+          <Button type="submit" variant="cta" loading={saving}>{t('save')}</Button>
         </div>
       </form>
     </Modal>

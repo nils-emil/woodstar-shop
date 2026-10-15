@@ -23,7 +23,7 @@ export function ProductsPage() {
   return (
     <div>
       <PageHeader title={t('products')}>
-        <Button icon={<Plus size={18} />} onClick={() => setEditing('new')}>{t('addProduct')}</Button>
+        <Button variant="cta" icon={<Plus size={18} />} onClick={() => setEditing('new')}>{t('addProduct')}</Button>
       </PageHeader>
       {products.error && <Alert tone="error" className="mb-4">{products.error}</Alert>}
       {products.loading && !products.data ? (
@@ -31,21 +31,21 @@ export function ProductsPage() {
       ) : !products.data?.length ? (
         <Alert tone="info">{t('noProducts')}</Alert>
       ) : (
-        <Card className="divide-y divide-wood-100">
+        <div className="grid gap-1">
           {[...products.data].sort((a, b) => a.sortOrder - b.sortOrder).map((p) => (
-            <div key={p.id} className="flex items-center gap-3 px-4 py-3">
+            <Card key={p.id} className="flex items-center gap-4 px-5 py-4">
               <div className="flex-1 min-w-0">
-                <div className="font-bold flex items-center gap-2">
+                <div className="font-bold text-[17px] flex items-center gap-2">
                   {productName(p, locale)}
                   {!p.active && <Badge tone="neutral">{t('inactive')}</Badge>}
                 </div>
-                <div className="text-sm text-stone-500 truncate">{locale === 'et' ? p.nameEn : p.nameEt}</div>
+                <div className="text-[15px] text-ink-3 truncate">{locale === 'et' ? p.nameEn : p.nameEt}</div>
               </div>
-              <div className="font-extrabold text-wood-800 whitespace-nowrap">{formatPrice(p.priceCents)}</div>
-              <Button variant="ghost" size="sm" icon={<Pencil size={16} />} onClick={() => setEditing(p)}>{t('edit')}</Button>
-            </div>
+              <div className="font-extrabold text-[17px] text-ink whitespace-nowrap">{formatPrice(p.priceCents)}</div>
+              <Button variant="secondary" size="sm" icon={<Pencil size={16} />} onClick={() => setEditing(p)}>{t('edit')}</Button>
+            </Card>
           ))}
-        </Card>
+        </div>
       )}
       <ProductForm
         product={editing === 'new' ? null : editing}
@@ -105,8 +105,8 @@ function ProductForm({ product, open, onClose, onSaved }: { product: AdminProduc
         <Checkbox label={t('active')} checked={form.active} onChange={(e) => set('active', e.target.checked)} />
         {error && <Alert tone="error">{error}</Alert>}
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>{t('cancel')}</Button>
-          <Button type="submit" loading={saving}>{t('save')}</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('cancel')}</Button>
+          <Button type="submit" variant="cta" loading={saving}>{t('save')}</Button>
         </div>
       </form>
     </Modal>

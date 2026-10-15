@@ -21,22 +21,22 @@ export function DevicesPage() {
       ) : !devices.data?.length ? (
         <Alert tone="info">{t('noDevices')}</Alert>
       ) : (
-        <Card className="divide-y divide-wood-100">
+        <div className="grid gap-1">
           {devices.data.map((d) => (
-            <div key={d.deviceId} className="flex items-center gap-3 px-4 py-3">
-              <span className={`grid place-items-center h-10 w-10 rounded-xl ${d.online ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <Card key={d.deviceId} className="flex items-center gap-4 px-5 py-4">
+              <span className={`grid place-items-center h-11 w-11 shrink-0 ${d.online ? 'bg-success-50 text-success-700' : 'bg-danger-50 text-danger-700'}`}>
                 {d.online ? <Wifi size={20} /> : <WifiOff size={20} />}
               </span>
               <div className="flex-1 min-w-0">
-                <div className="font-mono font-semibold break-all">{d.deviceId}</div>
-                <div className="text-sm text-stone-500">
+                <div className="font-semibold text-[17px] break-all">{d.deviceId}</div>
+                <div className="text-[15px] text-ink-3">
                   {t('linkedLockers')}: {d.lockers.length ? d.lockers.map((l) => `${l.siteName} ${l.label}`).join(', ') : '–'}
                 </div>
               </div>
               <Badge tone={d.online ? 'green' : 'red'}>{d.online ? t('online') : t('offline')}</Badge>
-            </div>
+            </Card>
           ))}
-        </Card>
+        </div>
       )}
     </div>
   )

@@ -1,20 +1,19 @@
 import type { ReactNode } from 'react'
 import type { LockerState, OrderState } from '@/api/types'
 
-type Tone = 'neutral' | 'green' | 'amber' | 'red' | 'blue' | 'wood'
+type Tone = 'neutral' | 'green' | 'amber' | 'red' | 'blue'
 
 const tones: Record<Tone, string> = {
-  neutral: 'bg-stone-100 text-stone-700',
-  green: 'bg-green-100 text-green-800',
-  amber: 'bg-amber-100 text-amber-800',
-  red: 'bg-red-100 text-red-800',
-  blue: 'bg-sky-100 text-sky-800',
-  wood: 'bg-wood-100 text-wood-800',
+  neutral: 'bg-surface text-ink',
+  green: 'bg-success-50 text-success-700',
+  amber: 'bg-warn-50 text-warn-700',
+  red: 'bg-danger-50 text-danger-700',
+  blue: 'bg-accent-50 text-accent-800',
 }
 
 export function Badge({ tone = 'neutral', children, className = '' }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${tones[tone]} ${className}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 text-[13px] font-semibold whitespace-nowrap ${tones[tone]} ${className}`}>
       {children}
     </span>
   )

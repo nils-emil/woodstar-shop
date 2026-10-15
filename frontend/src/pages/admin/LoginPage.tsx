@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { isApiError } from '@/api/client'
 import { Alert } from '@/components/Alert'
-import { Backdrop } from '@/components/Backdrop'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { LanguageToggle } from '@/components/LanguageToggle'
@@ -39,14 +38,13 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-dvh flex flex-col items-center justify-center p-4 gap-6">
-      <Backdrop />
-      <div className="relative z-10 flex items-center gap-2.5 fade-up">
-        <Logo size={36} />
-        <span className="text-xl font-bold text-ink tracking-tight">{t('appName')}</span>
-        <span className="text-xs font-semibold text-ink-4 uppercase tracking-wide mt-0.5">{t('admin')}</span>
+    <div className="min-h-dvh bg-canvas flex flex-col items-center justify-center p-4 gap-8">
+      <div className="flex items-center gap-3 enter">
+        <Logo size={40} className="text-ink" />
+        <span className="text-4xl font-extrabold text-ink tracking-[-0.05em]">{t('appName')}</span>
+        <span className="text-[16px] font-semibold text-ink-3">{t('admin')}</span>
       </div>
-      <div className="relative z-10 card rounded-2xl p-6 w-full max-w-sm fade-up" style={{ ['--i' as string]: 1 }}>
+      <div className="bg-paper p-6 sm:p-8 w-full max-w-sm enter" style={{ ['--i' as string]: 1 }}>
         <form onSubmit={onSubmit} className="space-y-4">
           <Input label={t('username')} name="username" autoComplete="username" required value={username} onChange={(e) => setUsername(e.target.value)} />
           <Input label={t('password')} name="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -54,7 +52,7 @@ export function LoginPage() {
           <Button type="submit" variant="cta" size="lg" full loading={loading}>{t('login')}</Button>
         </form>
       </div>
-      <div className="relative z-10 fade-up" style={{ ['--i' as string]: 2 }}><LanguageToggle /></div>
+      <div className="enter" style={{ ['--i' as string]: 2 }}><LanguageToggle /></div>
     </div>
   )
 }

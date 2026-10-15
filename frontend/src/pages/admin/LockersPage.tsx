@@ -14,11 +14,11 @@ import { formatDateTime, productName, useT } from '@/i18n'
 import { PageHeader } from './AdminLayout'
 
 const tileColors: Record<LockerState, string> = {
-  EMPTY: 'bg-stone-100 border-stone-300 text-stone-700',
-  STOCKED: 'bg-green-100 border-green-400 text-green-900',
-  RESERVED: 'bg-amber-100 border-amber-400 text-amber-900',
-  SOLD: 'bg-sky-100 border-sky-400 text-sky-900',
-  OUT_OF_ORDER: 'bg-red-100 border-red-400 text-red-900',
+  EMPTY: 'bg-paper text-ink hover:bg-surface',
+  STOCKED: 'bg-success-50 text-success-700 hover:bg-[#c6d6c2]',
+  RESERVED: 'bg-warn-50 text-warn-700 hover:bg-[#e3d2ab]',
+  SOLD: 'bg-accent-50 text-accent-800 hover:bg-accent-100',
+  OUT_OF_ORDER: 'bg-danger-50 text-danger-700 hover:bg-[#e6c1bc]',
 }
 
 const emptyInput = (siteId: string): LockerInput => ({
@@ -53,13 +53,13 @@ export function LockersPage() {
   return (
     <div>
       <PageHeader title={t('lockers')}>
-        <Button icon={<Plus size={18} />} onClick={() => { setEditing(null); setFormOpen(true) }} disabled={!siteId}>
+        <Button variant="cta" icon={<Plus size={18} />} onClick={() => { setEditing(null); setFormOpen(true) }} disabled={!siteId}>
           {t('addLocker')}
         </Button>
       </PageHeader>
 
       {sites.data && sites.data.length > 1 && (
-        <div className="max-w-xs mb-5">
+        <div className="max-w-xs mb-8">
           <Select label={t('site')} value={siteId} onChange={(e) => setSiteId(e.target.value)}>
             {sites.data.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
@@ -74,21 +74,21 @@ export function LockersPage() {
       ) : sorted.length === 0 ? (
         <Alert tone="info">{t('noLockers')}</Alert>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {sorted.map((l) => (
             <button
               key={l.id}
               onClick={() => setSelectedId(l.id)}
-              className={`text-left rounded-2xl border-2 p-3 min-h-28 flex flex-col transition-shadow hover:shadow-md ${tileColors[l.state]}`}
+              className={`relative text-left p-4 min-h-36 flex flex-col transition-[background-color,transform] duration-150 active:translate-y-px ${tileColors[l.state]}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-black">{l.label}</span>
-                <span title={l.online ? t('online') : t('offline')} className={l.online ? 'text-green-600' : 'text-red-500'}>
+                <span className="text-4xl font-extrabold tracking-[-0.05em] leading-none">{l.label}</span>
+                <span title={l.online ? t('online') : t('offline')} className={l.online ? 'text-success-700' : 'text-danger-700'}>
                   {l.online ? <Wifi size={16} /> : <WifiOff size={16} />}
                 </span>
               </div>
-              <div className="text-xs font-semibold uppercase mt-1">{t(`locker_${l.state}`)}</div>
-              <div className="text-sm mt-auto pt-2 truncate">{l.productName ?? <span className="opacity-60">{t('noProduct')}</span>}</div>
+              <div className="text-[15px] font-semibold mt-2">{t(`locker_${l.state}`)}</div>
+              <div className="text-[15px] mt-auto pt-3 truncate">{l.productName ?? t('noProduct')}</div>
             </button>
           ))}
         </div>
@@ -134,13 +134,13 @@ function LockerDrawer({
   const [busy, setBusy] = useState<string | null>(null)
   const [msg, setMsg] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
   const [stockProduct, setStockProduct] = useState('')
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirm, setConfirm] = useState<'open' | 'soldEmpty' | 'soldStock' | null>(null)
   const [events, setEvents] = useState<LockerEvent[] | null>(null)
 
   useEffect(() => {
     setMsg(null)
     setEvents(null)
-    setStockProduct(products.find((p) => p.active)?.id ?? products[0]?.id ?? '')
+    setStockProduct(locker?.productId ?? products.find((p) => p.active)?.id ?? products[0]?.id ?? '')
     if (locker) {
       admin.lockerEvents(locker.id).then(setEvents).catch(() => setEvents([]))
     }
@@ -171,25 +171,25 @@ function LockerDrawer({
         <div className="flex items-center gap-2 flex-wrap">
           <Badge tone={lockerStateTone[locker.state]}>{t(`locker_${locker.state}`)}</Badge>
           <Badge tone={locker.online ? 'green' : 'red'}>{locker.online ? t('online') : t('offline')}</Badge>
-          {siteName && <Badge tone="wood">{siteName}</Badge>}
+          {siteName && <Badge tone="neutral">{siteName}</Badge>}
         </div>
 
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-          <dt className="text-stone-500">{t('product')}</dt>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-[15px] bg-paper p-4">
+          <dt className="text-ink-3">{t('product')}</dt>
           <dd className="font-semibold">{locker.productName ?? '–'}</dd>
-          <dt className="text-stone-500">{t('stockedAt')}</dt>
+          <dt className="text-ink-3">{t('stockedAt')}</dt>
           <dd>{formatDateTime(locker.stockedAt, locale)}</dd>
-          <dt className="text-stone-500">{t('currentOrder')}</dt>
-          <dd className="font-mono">{locker.currentOrderNumber ?? '–'}</dd>
-          <dt className="text-stone-500">{t('deviceId')}</dt>
-          <dd className="font-mono break-all">{locker.shellyDeviceId}</dd>
-          <dt className="text-stone-500">{t('relayChannel')}</dt>
+          <dt className="text-ink-3">{t('currentOrder')}</dt>
+          <dd className="font-semibold">{locker.currentOrderNumber ?? '–'}</dd>
+          <dt className="text-ink-3">{t('deviceId')}</dt>
+          <dd className="break-all">{locker.shellyDeviceId}</dd>
+          <dt className="text-ink-3">{t('relayChannel')}</dt>
           <dd>{locker.relayChannel}</dd>
-          <dt className="text-stone-500">{t('pulseSeconds')}</dt>
+          <dt className="text-ink-3">{t('pulseSeconds')}</dt>
           <dd>{locker.pulseSeconds}</dd>
           {locker.note && (
             <>
-              <dt className="text-stone-500">{t('note')}</dt>
+              <dt className="text-ink-3">{t('note')}</dt>
               <dd>{locker.note}</dd>
             </>
           )}
@@ -198,9 +198,9 @@ function LockerDrawer({
         {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
 
         <div className="space-y-2">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-wood-600">{t('actions')}</h3>
+          <h3 className="text-xl font-extrabold tracking-[-0.03em] text-ink">{t('actions')}</h3>
 
-          {locker.state === 'EMPTY' && (
+          {(locker.state === 'EMPTY' || locker.state === 'SOLD') && (
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <Select label={t('stockWith')} value={stockProduct} onChange={(e) => setStockProduct(e.target.value)}>
@@ -210,8 +210,17 @@ function LockerDrawer({
                   ))}
                 </Select>
               </div>
-              <Button variant="success" loading={busy === 'stock'} disabled={!stockProduct} onClick={() => void run('stock', () => admin.stockLocker(locker.id, stockProduct))}>
-                {t('stock')}
+              <Button
+                variant="success"
+                loading={busy === 'stock'}
+                disabled={!stockProduct}
+                onClick={() =>
+                  locker.state === 'SOLD'
+                    ? setConfirm('soldStock')
+                    : void run('stock', () => admin.stockLocker(locker.id, stockProduct))
+                }
+              >
+                {locker.state === 'SOLD' ? t('soldRestock') : t('stock')}
               </Button>
             </div>
           )}
@@ -219,6 +228,11 @@ function LockerDrawer({
           {locker.state === 'STOCKED' && (
             <Button variant="secondary" full loading={busy === 'empty'} onClick={() => void run('empty', () => admin.emptyLocker(locker.id))}>
               {t('empty')}
+            </Button>
+          )}
+          {locker.state === 'SOLD' && (
+            <Button variant="secondary" full loading={busy === 'empty'} onClick={() => setConfirm('soldEmpty')}>
+              {t('soldEmptied')}
             </Button>
           )}
 
@@ -233,27 +247,27 @@ function LockerDrawer({
             </Button>
           )}
 
-          <Button full icon={<DoorOpen size={18} />} loading={busy === 'open'} onClick={() => setConfirmOpen(true)}>
+          <Button variant="cta" full icon={<DoorOpen size={18} />} loading={busy === 'open'} onClick={() => setConfirm('open')}>
             {t('openDoor')}
           </Button>
-          <Button variant="ghost" full onClick={onEdit}>{t('edit')}</Button>
+          <Button variant="secondary" full onClick={onEdit}>{t('edit')}</Button>
         </div>
 
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wide text-wood-600 mb-2">{t('events')}</h3>
+          <h3 className="text-xl font-extrabold tracking-[-0.03em] text-ink mb-3">{t('events')}</h3>
           {events === null ? (
-            <div className="text-sm text-stone-400">{t('loading')}</div>
+            <div className="text-[15px] text-ink-3">{t('loading')}</div>
           ) : events.length === 0 ? (
-            <div className="text-sm text-stone-400">{t('noEvents')}</div>
+            <div className="text-[15px] text-ink-3">{t('noEvents')}</div>
           ) : (
-            <ul className="divide-y divide-wood-100 text-sm">
+            <ul className="grid gap-1 text-[15px]">
               {events.map((e) => (
-                <li key={e.id} className="py-2">
+                <li key={e.id} className={`px-3 py-2.5 ${e.type === 'OPEN_FAILED' ? 'bg-danger-50 text-danger-700' : 'bg-paper'}`}>
                   <div className="flex justify-between gap-2">
-                    <span className={`font-semibold ${e.type === 'OPEN_FAILED' ? 'text-red-700' : ''}`}>{t(`event_${e.type}`)}</span>
-                    <span className="text-stone-400 whitespace-nowrap">{formatDateTime(e.createdAt, locale)}</span>
+                    <span className="font-semibold">{t(`event_${e.type}`)}</span>
+                    <span className="text-ink-3 whitespace-nowrap">{formatDateTime(e.createdAt, locale)}</span>
                   </div>
-                  {e.detail && <div className="text-stone-500 break-words">{e.detail}</div>}
+                  {e.detail && <div className="text-ink-3 break-words">{e.detail}</div>}
                 </li>
               ))}
             </ul>
@@ -262,15 +276,37 @@ function LockerDrawer({
       </div>
 
       <ConfirmDialog
-        open={confirmOpen}
+        open={confirm === 'open'}
         title={t('openDoor')}
         message={t('openDoorConfirm', { label: locker.label })}
         confirmLabel={t('openDoor')}
         loading={busy === 'open'}
-        onClose={() => setConfirmOpen(false)}
+        onClose={() => setConfirm(null)}
         onConfirm={() => {
-          setConfirmOpen(false)
+          setConfirm(null)
           void run('open', () => admin.openLocker(locker.id), t('doorOpenSent'))
+        }}
+      />
+      <ConfirmDialog
+        open={confirm === 'soldEmpty'}
+        title={t('soldEmptied')}
+        message={t('soldEmptiedConfirm', { label: locker.label, number: locker.currentOrderNumber ?? '–' })}
+        confirmLabel={t('soldEmptied')}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => {
+          setConfirm(null)
+          void run('empty', () => admin.emptyLocker(locker.id))
+        }}
+      />
+      <ConfirmDialog
+        open={confirm === 'soldStock'}
+        title={t('soldRestock')}
+        message={t('soldRestockConfirm', { label: locker.label, number: locker.currentOrderNumber ?? '–' })}
+        confirmLabel={t('soldRestock')}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => {
+          setConfirm(null)
+          void run('stock', () => admin.stockLocker(locker.id, stockProduct))
         }}
       />
     </Drawer>
@@ -344,8 +380,8 @@ function LockerForm({
         <Textarea label={t('note')} name="note" value={form.note ?? ''} onChange={(e) => set('note', e.target.value)} />
         {error && <Alert tone="error">{error}</Alert>}
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>{t('cancel')}</Button>
-          <Button type="submit" loading={saving}>{t('save')}</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('cancel')}</Button>
+          <Button type="submit" variant="cta" loading={saving}>{t('save')}</Button>
         </div>
       </form>
     </Modal>

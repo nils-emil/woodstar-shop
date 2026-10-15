@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Check, DoorOpen, MapPin, WifiOff } from 'lucide-react'
+import { Check, DoorOpen, WifiOff } from 'lucide-react'
 import { api, isApiError } from '@/api/client'
 import type { CannotOpenReason, PickupInfo } from '@/api/types'
 import { Alert } from '@/components/Alert'
@@ -26,18 +26,15 @@ function reasonText(reason: CannotOpenReason | string, t: TFunction): string {
   }
 }
 
-/** Small locker door swinging open to reveal a checkmark. */
-function DoorAnimation({ label }: { label: string }) {
+/** The door swings open on its hinge to show the empty, green inside. */
+function DoorSwing({ label }: { label: string }) {
   return (
-    <div className="relative mx-auto h-28 w-28 door-scene">
-      <div className="absolute inset-0 rounded-xl bg-success-50 border border-success-500/30 grid place-items-center">
-        <span className="door-inside grid place-items-center h-12 w-12 rounded-full bg-success-500 text-white">
-          <Check size={28} strokeWidth={3} />
-        </span>
+    <div className="relative h-40 w-32 door-scene" aria-hidden="true">
+      <div className="absolute inset-0 bg-success-500 grid place-items-center text-white door-inside">
+        <Check size={44} strokeWidth={3} />
       </div>
-      <div className="door absolute inset-0 rounded-xl bg-white border border-line shadow-card grid place-items-center">
-        <span className="font-display text-4xl font-medium text-ink">{label}</span>
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-1.5 rounded-full bg-line-strong" />
+      <div className="door-swing absolute inset-0 bg-surface grid place-items-center">
+        <span className="display text-6xl">{label}</span>
       </div>
     </div>
   )
@@ -75,9 +72,9 @@ export function PickupPage() {
   if (info.loading && !info.data) return <PageSpinner />
   if (!info.data) {
     return info.errorCode === 'HTTP_404' || info.errorCode === 'NOT_FOUND' ? (
-      <Alert tone="error" className="mt-6">{t('pickupNotFound')}</Alert>
+      <Alert tone="error" className="mt-10">{t('pickupNotFound')}</Alert>
     ) : (
-      <div className="space-y-3 pt-6">
+      <div className="space-y-4 pt-10">
         <Alert tone="error">{t('networkError')}</Alert>
         <Button variant="secondary" onClick={() => void info.reload()}>{t('retry')}</Button>
       </div>
@@ -89,65 +86,55 @@ export function PickupPage() {
   const finished = !d.canOpen && d.state === 'PICKED_UP' && !opened
 
   return (
-    <div className="space-y-5 pt-6">
-      <div className="fade-up" style={{ ['--i' as string]: 0 }}>
-        <p className="text-sm font-semibold text-accent-600 mb-1">{t('locker')}</p>
-        <div className="flex items-end justify-between gap-4">
-          <h1 className="font-display text-[4.5rem] leading-none font-medium text-ink">{d.lockerLabel}</h1>
-          <div className="text-right pb-2">
-            <div className="font-semibold text-ink">{d.productName}</div>
-            <div className="text-xs text-ink-4 font-mono mt-0.5">{d.orderNumber}</div>
-          </div>
+    <div className="pt-4 grid gap-5">
+      {/* the panel is the locker door itself */}
+      <section className="door-panel enter" aria-labelledby="door-label">
+        <div className="flex items-start justify-between gap-4">
+          <p className="font-semibold">{t('locker')}</p>
+          <p className="font-semibold text-right">{d.orderNumber}</p>
         </div>
-      </div>
-
-      <div className="card rounded-2xl divide-y divide-line fade-up" style={{ ['--i' as string]: 1 }}>
-        <div className="flex items-start gap-3 px-4 py-3.5">
-          <MapPin size={18} className="shrink-0 text-accent-600 mt-0.5" />
-          <div className="text-sm">
-            <div className="font-semibold text-ink">{d.siteName}</div>
-            <div className="text-ink-3">{d.siteAddress}</div>
-          </div>
+        <h1 id="door-label" className="display door-label">{d.lockerLabel}</h1>
+        <div className="grid gap-1 lead font-semibold pr-6">
+          <span>{d.productName}</span>
+          <span>{d.siteName}</span>
+          <span className="text-ink-3">{d.siteAddress}</span>
+          {d.pickupDeadline && d.state === 'PAID' && (
+            <span className="text-ink-3">{t('pickupBy')} {formatDateTime(d.pickupDeadline, locale)}</span>
+          )}
         </div>
-        {d.pickupDeadline && d.state === 'PAID' && (
-          <div className="px-4 py-3 text-sm flex items-center justify-between">
-            <span className="text-ink-3">{t('pickupBy')}</span>
-            <span className="font-semibold text-ink">{formatDateTime(d.pickupDeadline, locale)}</span>
-          </div>
-        )}
-      </div>
+      </section>
 
       {!d.deviceOnline && canOpen && !opened && (
-        <Alert tone="warning" className="fade-up">
-          <span className="flex items-center gap-2"><WifiOff size={16} /> {t('deviceOffline')}</span>
+        <Alert tone="warning">
+          <span className="flex items-center gap-2"><WifiOff size={18} /> {t('deviceOffline')}</span>
         </Alert>
       )}
 
       {opened && (
-        <div className="card rounded-2xl p-6 flex flex-col items-center text-center gap-3 animate-pop-in">
-          <DoorAnimation label={d.lockerLabel} />
-          <h2 className="text-xl font-bold text-ink mt-1">{t('doorOpened')}</h2>
-          <p className="text-sm text-ink-3 max-w-xs">{t('doorOpenedHint')}</p>
+        <div className="bg-paper p-6 flex items-center gap-6 enter">
+          <DoorSwing label={d.lockerLabel} />
+          <div className="grid gap-2">
+            <h2 className="text-3xl font-extrabold tracking-[-0.04em] leading-none">{t('doorOpened')}</h2>
+            <p>{t('doorOpenedHint')}</p>
+          </div>
         </div>
       )}
 
       {openError && <Alert tone="error">{openError.text}</Alert>}
 
       {canOpen ? (
-        <div className="space-y-3 fade-up" style={{ ['--i' as string]: 2 }}>
+        <div className="grid gap-3 enter" style={{ ['--i' as string]: 1 }}>
           <button
             onClick={() => void open()}
             disabled={opening}
-            className={`w-full h-24 rounded-2xl flex items-center justify-center gap-3 text-2xl font-bold select-none transition-transform active:scale-[0.99] disabled:cursor-wait focus:outline-none focus-visible:ring-4 focus-visible:ring-accent-300 ${
-              opened ? 'card text-ink' : 'btn-cta pulse-soft'
+            className={`btn w-full !min-h-24 !text-3xl !font-extrabold tracking-[-0.03em] disabled:cursor-wait ${
+              opened ? 'btn-tone' : 'btn-accent'
             }`}
           >
-            {opening ? <Spinner size={32} /> : <DoorOpen size={34} strokeWidth={1.75} />}
+            {opening ? <Spinner size={32} /> : <DoorOpen size={36} strokeWidth={2} aria-hidden="true" />}
             {opening ? t('opening') : opened ? t('openAgain') : t('openLocker')}
           </button>
-          <p className="text-center text-sm text-ink-3">
-            {opened ? t('opensRemaining', { n: d.opensRemaining }) : t('standInFront')}
-          </p>
+          <p className="text-center">{opened ? t('opensRemaining', { n: d.opensRemaining }) : t('standInFront')}</p>
         </div>
       ) : finished ? (
         <Alert tone="success">{t('alreadyPickedUp')}</Alert>
