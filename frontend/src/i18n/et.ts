@@ -33,6 +33,7 @@ export const et = {
   step3: 'Kapi juures vajuta lingil „Ava kapiuks“',
   salesClosed: 'Müük avatakse peagi. Kapid ja kotid on juba näha, tellida saab varsti.',
   demoNotice: 'Demo: makset ei võeta ja kapiuks avaneb näidisena.',
+  mapLabel: 'Asukohad kaardil',
   invalidEmail: 'Palun sisesta korrektne e-posti aadress',
   noSites: 'Ühtegi asukohta pole hetkel saadaval.',
 

@@ -6,6 +6,7 @@ import type { PublicProduct, PublicSite } from '@/api/types'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { SiteMap } from '@/components/SiteMap'
 import { PageSpinner } from '@/components/Spinner'
 import { errorMessage, useAsync } from '@/components/useAsync'
 import { formatPrice, productDescription, productName, useT, type TFunction } from '@/i18n'
@@ -109,6 +110,17 @@ export function StorefrontPage() {
             {t(photos.birch.caption)}. {t('photo')}: {photos.birch.creator}, {photos.birch.license}
           </figcaption>
         </figure>
+        {sites.data && (
+          <SiteMap
+            sites={sites.data}
+            selectedId={site?.id}
+            onSelect={(id) => {
+              setSiteId(id)
+              setProductId(null)
+            }}
+            label={t('mapLabel')}
+          />
+        )}
       </div>
 
       {/* The purchase */}

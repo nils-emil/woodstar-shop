@@ -164,6 +164,21 @@ textarea.field { padding-top: 12px; min-height: 96px; }
 .select-wrap { position: relative; }
 .select-wrap svg { position: absolute; right: 14px; top: 50%; translate: 0 -50%; pointer-events: none; }
 
+/* ---------- Location map (Leaflet, OpenStreetMap tiles) ---------- */
+
+.site-map { height: 260px; background: var(--color-surface); z-index: 0; }
+@media (min-width: 1024px) { .site-map { height: 300px; } }
+.site-map .leaflet-tile-pane { filter: grayscale(1) contrast(0.92) brightness(1.04); }
+.site-map .leaflet-control-attribution { font-size: 12px; background: rgb(239 238 234 / 0.9); }
+.map-pin { position: absolute; display: flex; align-items: center; gap: 6px; translate: -9px -9px; cursor: pointer; white-space: nowrap; }
+.map-pin-dot { width: 18px; height: 18px; background: var(--color-ink); outline: 3px solid var(--color-paper); transition: background-color var(--t-hover) ease, transform var(--t-hover) var(--ease-out); }
+.map-pin-name { padding: 2px 6px; background: var(--color-paper); color: var(--color-ink); font: 600 14px/1.3 var(--font-sans); }
+.map-pin:hover .map-pin-dot { transform: scale(1.15); }
+.map-pin.is-selected .map-pin-dot { background: var(--color-accent-600); }
+.map-pin.is-selected .map-pin-name { background: var(--color-ink); color: var(--color-paper); }
+.leaflet-marker-icon:focus-visible { outline: none; }
+.leaflet-marker-icon:focus-visible .map-pin-dot { outline-color: var(--color-accent-600); }
+
 /* ---------- Public pages (order, pickup) ---------- */
 
 .wordmark { font-weight: 800; font-size: var(--step-lead); letter-spacing: -0.05em; }
