@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "woodstar.payments", name = "provider", havingValue = "fake", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "woodstar.payments", name = "provider", havingValue = "fake")
 public class FakePaymentGateway implements PaymentGateway {
     private final WoodstarProperties props;
 

@@ -25,20 +25,13 @@ with your Hetzner Storage Box or restic if the data matters; a VM disk is not a 
 ## 1. Server
 
 - Hetzner Cloud, Ubuntu 24.04 (CX22 is plenty), Helsinki datacenter for lowest latency to Estonia.
-- Add your SSH key when creating it. Then create the deploy user:
+- Add your SSH key when creating it. Deploys log in as `root` (the scripts run with `sudo -E`, which is a no-op for root).
+- On the server, as root, create a key pair just for GitHub Actions and authorise it:
 
 ```bash
-ssh root@<ip>
-adduser --disabled-password --gecos "" deploy
-mkdir -p /home/deploy/.ssh && cp ~/.ssh/authorized_keys /home/deploy/.ssh/ && chown -R deploy:deploy /home/deploy/.ssh
-echo 'deploy ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/deploy
-mkdir -p /opt/woodstar && chown deploy:deploy /opt/woodstar
-```
-
-- Generate a dedicated key pair for Actions and add its public half to `/home/deploy/.ssh/authorized_keys`:
-
-```bash
-ssh-keygen -t ed25519 -C woodstar-deploy -f woodstar-deploy   # keep the private key for the SSH_KEY secret
+ssh-keygen -t ed25519 -C puukapp-deploy -f ~/.ssh/puukapp-deploy -N ""
+cat ~/.ssh/puukapp-deploy.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+cat ~/.ssh/puukapp-deploy        # paste into the SSH_KEY secret, then: rm ~/.ssh/puukapp-deploy
 ```
 
 - DNS: an `A` record for your domain (and `AAAA` if the VM has IPv6) pointing at the server.
@@ -52,14 +45,14 @@ Repository → Settings → Secrets and variables → Actions.
 
 | Secret | Value |
 |---|---|
-| `SSH_USER` | `deploy` |
+| `SSH_USER` | `root` |
 | `SSH_KEY` | private key generated above (full PEM text) |
 | `GHCR_PAT` | a classic personal access token with `read:packages`, used by the server to pull images |
 | `DB_PASSWORD` | strong random string |
 | `ADMIN_PASSWORD` | initial admin password (seeded only when the admin table is empty) |
 | `MQTT_PASSWORD` | strong random string for the backend's broker user |
-| `MAKSEKESKUS_SHOP_ID` | from the Maksekeskus merchant portal |
-| `MAKSEKESKUS_SECRET_KEY` | from the Maksekeskus merchant portal |
+| `MAKSEKESKUS_SHOP_ID` | optional; from the Maksekeskus merchant portal |
+| `MAKSEKESKUS_SECRET_KEY` | optional; without both keys the shop is deployed with **sales closed** (stock is visible, orders are refused) |
 | `SMTP_USERNAME`, `SMTP_PASSWORD` | optional; without SMTP, pickup emails are only logged |
 
 **Variables**
@@ -67,7 +60,7 @@ Repository → Settings → Secrets and variables → Actions.
 | Variable | Value |
 |---|---|
 | `PROD_HOST` | server IP or hostname |
-| `DOMAIN` | e.g. `woodstar.ee` |
+| `DOMAIN` | `puukapp.ee` |
 | `ADMIN_USERNAME` | optional, default `admin` |
 | `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM` | optional |
 | `MAKSEKESKUS_BASE_URL` | optional; set `https://api.test.maksekeskus.ee/v1` while testing with a test shop |
@@ -93,7 +86,7 @@ Then:
 ## Operating
 
 ```bash
-ssh deploy@<host>
+ssh root@<host>
 cd /opt/woodstar
 alias wc='sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env'
 wc ps

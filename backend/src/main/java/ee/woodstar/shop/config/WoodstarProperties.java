@@ -34,7 +34,7 @@ public class WoodstarProperties {
         private String clientIdPrefix = "woodstar-backend";
         private int rpcTimeoutSeconds = 5;
     }
-    @Getter @Setter public static class Mail { private String from = "noreply@woodstar.ee"; }
+    @Getter @Setter public static class Mail { private String from = "noreply@puukapp.ee"; }
     @Getter @Setter public static class Pickup { private int deadlineHours = 48; private int reopenWindowMinutes = 30; private int maxOpens = 5; }
     @Getter @Setter public static class Order { private int reservationTtlMinutes = 15; }
 }

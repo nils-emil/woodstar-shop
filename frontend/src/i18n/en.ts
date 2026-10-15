@@ -1,7 +1,7 @@
 import type { TranslationKey } from './et'
 
 export const en: Record<TranslationKey, string> = {
-  appName: 'Woodstar',
+  appName: 'Puukapp',
   paymentBy: 'Payments by Maksekeskus',
   loading: 'Loading…',
   retry: 'Try again',
@@ -31,6 +31,7 @@ export const en: Record<TranslationKey, string> = {
   step1: 'Choose a bag and pay on your phone',
   step2: 'The opening link arrives by email',
   step3: 'At the locker, press “Open locker” in the link',
+  salesClosed: 'Sales open soon. You can already see the lockers and bags; ordering starts shortly.',
   invalidEmail: 'Please enter a valid email address',
   noSites: 'No locations are available right now.',
 

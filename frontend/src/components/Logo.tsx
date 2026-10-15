@@ -1,4 +1,4 @@
-/** Woodstar mark: a log end with a star-shaped heartwood. Square, flat, in ink. */
+/** Puukapp mark: a log end with a star-shaped heartwood. Square, flat, in ink. */
 export function Logo({ size = 32, className = '' }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">

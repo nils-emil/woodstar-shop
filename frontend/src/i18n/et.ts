@@ -1,6 +1,6 @@
 export const et = {
   // common
-  appName: 'Woodstar',
+  appName: 'Puukapp',
   paymentBy: 'Makse: Maksekeskus',
   loading: 'Laadin…',
   retry: 'Proovi uuesti',
@@ -31,6 +31,7 @@ export const et = {
   step1: 'Vali kott ja maksa telefonis',
   step2: 'Avamislink tuleb e-postile',
   step3: 'Kapi juures vajuta lingil „Ava kapiuks“',
+  salesClosed: 'Müük avatakse peagi. Kapid ja kotid on juba näha, tellida saab varsti.',
   invalidEmail: 'Palun sisesta korrektne e-posti aadress',
   noSites: 'Ühtegi asukohta pole hetkel saadaval.',
 

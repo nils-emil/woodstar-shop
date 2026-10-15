@@ -82,7 +82,7 @@ public class MaksekeskusPaymentGateway implements PaymentGateway {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("transaction", order.getPaymentRef());
         body.put("amount", formatAmount(order.getPriceCents()));
-        body.put("comment", "Woodstar order " + order.getOrderNumber() + " cancelled");
+        body.put("comment", "Puukapp order " + order.getOrderNumber() + " cancelled");
         try {
             http.post()
                 .uri(config.getBaseUrl() + "/refunds")

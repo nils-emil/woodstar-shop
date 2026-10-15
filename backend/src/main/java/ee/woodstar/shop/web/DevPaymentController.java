@@ -16,7 +16,7 @@ import java.util.UUID;
 /** Stand-in for the payment provider's hosted page when woodstar.payments.provider=fake. */
 @RestController
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "woodstar.payments", name = "provider", havingValue = "fake", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "woodstar.payments", name = "provider", havingValue = "fake")
 public class DevPaymentController {
 
     private final OrderService orderService;

@@ -40,6 +40,9 @@ public class OrderService {
 
     @Transactional
     public Checkout create(UUID siteId, UUID productId, String email, String phone, String locale, String customerIp) {
+        if (!paymentGateway.acceptsPayments()) {
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "SALES_CLOSED", "Sales are not open yet");
+        }
         Site site = sites.findById(siteId).filter(Site::isActive).orElseThrow(() -> ApiException.notFound("Site"));
         Product product = products.findById(productId).filter(Product::isActive).orElseThrow(() -> ApiException.notFound("Product"));
         Locker locker = lockers.lockOneStocked(siteId, productId)

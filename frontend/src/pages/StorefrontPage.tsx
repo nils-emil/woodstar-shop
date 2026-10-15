@@ -23,6 +23,9 @@ export function StorefrontPage() {
   const { t, locale } = useT()
   const [params, setParams] = useSearchParams()
   const sites = useAsync(() => api.sites())
+  const status = useAsync(() => api.status())
+  // Until a payment provider is configured the shop shows stock but does not take orders.
+  const salesOpen = status.data?.salesOpen ?? true
   const [siteId, setSiteId] = useState<string | null>(null)
   const [productId, setProductId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
@@ -62,7 +65,10 @@ export function StorefrontPage() {
       window.location.assign(res.checkoutUrl)
     } catch (err) {
       setSubmitting(false)
-      if (isApiError(err) && err.code === 'SOLD_OUT') {
+      if (isApiError(err) && err.code === 'SALES_CLOSED') {
+        setNotice({ tone: 'warning', text: t('salesClosed') })
+        await status.reload()
+      } else if (isApiError(err) && err.code === 'SOLD_OUT') {
         setNotice({ tone: 'warning', text: t('soldOutJustNow') })
         setProductId(null)
         await sites.reload()
@@ -171,42 +177,48 @@ export function StorefrontPage() {
               ))}
             </fieldset>
 
-            <div className="grid gap-4">
-              <Input
-                label={t('email')}
-                name="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                hint={t('emailHint')}
-                error={emailError ?? undefined}
-              />
-              <Input
-                label={t('phone')}
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
+            {!salesOpen ? (
+              <Alert tone="info">{t('salesClosed')}</Alert>
+            ) : (
+              <>
+                <div className="grid gap-4">
+                  <Input
+                    label={t('email')}
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    hint={t('emailHint')}
+                    error={emailError ?? undefined}
+                  />
+                  <Input
+                    label={t('phone')}
+                    name="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
 
-            <div className="grid gap-2">
-              <Button type="submit" variant="cta" size="lg" full loading={submitting} disabled={!product}>
-                {submitting
-                  ? t('redirectingToPayment')
-                  : product
-                    ? t('buyFor', { price: formatPrice(product.priceCents) })
-                    : t('soldOut')}
-              </Button>
-              <p className="small text-ink-3 text-center">
-                {t('vatIncluded')} · {t('paymentBy')}
-              </p>
-            </div>
+                <div className="grid gap-2">
+                  <Button type="submit" variant="cta" size="lg" full loading={submitting} disabled={!product}>
+                    {submitting
+                      ? t('redirectingToPayment')
+                      : product
+                        ? t('buyFor', { price: formatPrice(product.priceCents) })
+                        : t('soldOut')}
+                  </Button>
+                  <p className="small text-ink-3 text-center">
+                    {t('vatIncluded')} · {t('paymentBy')}
+                  </p>
+                </div>
+              </>
+            )}
           </>
         )}
       </form>

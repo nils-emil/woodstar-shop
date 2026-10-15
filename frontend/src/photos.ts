@@ -1,7 +1,7 @@
 import type { TranslationKey } from '@/i18n/et'
 
 /**
- * Openly licensed picture from Wikimedia Commons. It does not show a Woodstar locker or bag;
+ * Openly licensed picture from Wikimedia Commons. It does not show a Puukapp locker or bag;
  * the caption says where it was taken. Replace with the company's own photography when it exists.
  */
 export const photos = {

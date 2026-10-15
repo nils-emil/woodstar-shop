@@ -1,6 +1,6 @@
 import { useT } from '@/i18n'
 
-const MAIL_FROM = 'noreply@woodstar.ee'
+const MAIL_FROM = 'noreply@puukapp.ee'
 
 export function SiteFooter() {
   const { t } = useT()

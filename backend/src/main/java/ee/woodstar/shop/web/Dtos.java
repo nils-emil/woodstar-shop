@@ -63,6 +63,7 @@ public final class Dtos {
     public record LockerAdmin(UUID id, UUID siteId, String siteName, String label, String shellyDeviceId, int relayChannel,
                               int pulseSeconds, LockerState state, UUID productId, String productName, Instant stockedAt,
                               String note, boolean online, UUID currentOrderId, String currentOrderNumber) {}
+    public record ShopStatus(boolean salesOpen) {}
     public record StockRequest(@NotNull UUID productId) {}
     public record OutOfOrderRequest(boolean outOfOrder) {}
     public record EventView(UUID id, UUID orderId, LockerEventType type, String detail, Instant createdAt) {

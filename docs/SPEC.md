@@ -109,7 +109,7 @@ Use `org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5`, automatic reconnect
 
 ## Payment contract
 
-`woodstar.payments.provider` = `maksekeskus` | `fake`.
+`woodstar.payments.provider` = `none` (default: sales closed, `POST /api/orders` → 503 `SALES_CLOSED`) | `maksekeskus` | `fake` (dev only; the app refuses to start with `fake` under the `prod` profile). `ops/deploy.sh` sets `maksekeskus` when both keys are present, else `none`.
 
 ```java
 public interface PaymentGateway {
@@ -141,6 +141,7 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
 
 - `GET /api/sites` → `[{id, name, address, lat, lng, products:[{id, nameEt, nameEn, descriptionEt, descriptionEn, priceCents, available}]}]`
   Only active sites/products; `available` = STOCKED locker count for that product at the site.
+- `GET /api/status` → `{salesOpen}` (false while no payment provider is configured)
 - `POST /api/orders` `{siteId, productId, email, phone?, locale}` → `201 {orderId, checkoutUrl}` / `409 SOLD_OUT`
 - `GET /api/orders/{id}` → `{id, orderNumber, state, siteName, siteAddress, lockerLabel, productName, priceCents, pickupToken (only when state is PAID or PICKED_UP), pickupDeadline}`
 - `GET /api/pickup/{token}` → `{orderNumber, state, siteName, siteAddress, lockerLabel, productName, pickupDeadline, canOpen, cannotOpenReason?, opensRemaining, deviceOnline}`

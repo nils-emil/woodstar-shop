@@ -31,6 +31,13 @@ public class PublicController {
     private final LockerRepository lockers;
     private final OrderRepository orders;
     private final OrderService orderService;
+    private final ee.woodstar.shop.payment.PaymentGateway paymentGateway;
+
+    /** Whether the storefront may take orders (false until a payment provider is configured). */
+    @GetMapping("/status")
+    public ShopStatus status() {
+        return new ShopStatus(paymentGateway.acceptsPayments());
+    }
 
     @GetMapping("/sites")
     @Transactional(readOnly = true)

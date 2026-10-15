@@ -66,7 +66,7 @@ woodstar:
     username: ${ADMIN_USERNAME:admin}
     password: ${ADMIN_PASSWORD:admin}
   payments:
-    provider: ${PAYMENTS_PROVIDER:fake}
+    provider: ${PAYMENTS_PROVIDER:none}
     maksekeskus:
       shop-id: ${MAKSEKESKUS_SHOP_ID:}
       secret-key: ${MAKSEKESKUS_SECRET_KEY:}
@@ -81,7 +81,7 @@ woodstar:
     client-id-prefix: woodstar-backend
     rpc-timeout-seconds: 5
   mail:
-    from: ${MAIL_FROM:noreply@woodstar.ee}
+    from: ${MAIL_FROM:noreply@puukapp.ee}
   pickup:
     deadline-hours: ${PICKUP_DEADLINE_HOURS:48}
     reopen-window-minutes: 30

@@ -14,4 +14,9 @@ public interface PaymentGateway {
     void refund(Order order);
 
     String providerName();
+
+    /** False when no provider is configured: orders cannot be created. */
+    default boolean acceptsPayments() {
+        return true;
+    }
 }

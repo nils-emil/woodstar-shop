@@ -1,4 +1,4 @@
-# Production reverse proxy. DOMAIN comes from .env (e.g. woodstar.ee).
+# Production reverse proxy. DOMAIN comes from .env (e.g. puukapp.ee).
 # Caddy obtains and renews Let's Encrypt certificates automatically.
 {$DOMAIN} {
     encode zstd gzip

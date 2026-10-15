@@ -117,8 +117,7 @@ jobs:
           MAKSEKESKUS_SECRET_KEY: ${{ secrets.MAKSEKESKUS_SECRET_KEY }}
         run: |
           missing=""
-          for v in PROD_HOST DOMAIN SSH_USER SSH_KEY GHCR_PAT DB_PASSWORD ADMIN_PASSWORD MQTT_PASSWORD \
-                   MAKSEKESKUS_SHOP_ID MAKSEKESKUS_SECRET_KEY; do
+          for v in PROD_HOST DOMAIN SSH_USER SSH_KEY GHCR_PAT DB_PASSWORD ADMIN_PASSWORD MQTT_PASSWORD; do
             eval "val=\${$v:-}"
             [ -n "$val" ] || missing="$missing $v"
           done
@@ -127,6 +126,9 @@ jobs:
             exit 1
           fi
           echo "all required settings are present"
+          if [ -z "$MAKSEKESKUS_SHOP_ID" ] || [ -z "$MAKSEKESKUS_SECRET_KEY" ]; then
+            echo "::notice::no Maksekeskus keys: deploying with sales closed (orders are refused)"
+          fi
 
       - name: Copy release files to the server
         uses: appleboy/scp-action@v0.1.7

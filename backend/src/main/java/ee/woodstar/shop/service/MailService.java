@@ -40,8 +40,8 @@ public class MailService {
         String lockerLabel = order.getLocker().getLabel();
 
         String subject = en
-            ? "Woodstar: your firewood is waiting in locker " + lockerLabel
-            : "Woodstar: sinu küttepuud ootavad kapis " + lockerLabel;
+            ? "Puukapp: your firewood is waiting in locker " + lockerLabel
+            : "Puukapp: sinu küttepuud ootavad kapis " + lockerLabel;
         String body = en
             ? """
               Thank you for your order %s.

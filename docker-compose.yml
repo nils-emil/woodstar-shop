@@ -59,7 +59,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      MAIL_FROM: ${MAIL_FROM:-noreply@woodstar.ee}
+      MAIL_FROM: ${MAIL_FROM:-noreply@puukapp.ee}
       PICKUP_DEADLINE_HOURS: ${PICKUP_DEADLINE_HOURS:-48}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
