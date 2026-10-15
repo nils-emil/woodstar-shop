@@ -3,6 +3,7 @@ package ee.woodstar.shop.service;
 import ee.woodstar.shop.domain.*;
 import ee.woodstar.shop.locker.LockerController;
 import ee.woodstar.shop.repository.LockerRepository;
+import ee.woodstar.shop.repository.OrderRepository;
 import ee.woodstar.shop.repository.ProductRepository;
 import ee.woodstar.shop.repository.SiteRepository;
 import ee.woodstar.shop.web.ApiException;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class InventoryService {
 
     private final LockerRepository lockers;
+    private final OrderRepository orders;
     private final SiteRepository sites;
     private final ProductRepository products;
     private final LockerController lockerController;
@@ -59,14 +62,26 @@ public class InventoryService {
         l.setNote(in.note());
     }
 
+    /**
+     * EMPTY → STOCKED. Also SOLD → STOCKED: the paid bag was never collected and goes back on sale;
+     * its order becomes EXPIRED so the buyer's link no longer opens the door (no refund; refunds go
+     * through cancelling the order instead).
+     */
     @Transactional
     public Locker stock(UUID lockerId, UUID productId, String actor) {
         Locker l = get(lockerId);
-        if (l.getState() != LockerState.EMPTY) {
-            throw ApiException.conflict("INVALID_STATE", "Only EMPTY lockers can be stocked (current: " + l.getState() + ")");
+        if (l.getState() != LockerState.EMPTY && l.getState() != LockerState.SOLD) {
+            throw ApiException.conflict("INVALID_STATE", "Only EMPTY or SOLD lockers can be stocked (current: " + l.getState() + ")");
         }
         Product p = products.findById(productId).orElseThrow(() -> ApiException.notFound("Product"));
         Instant now = clock.instant();
+        if (l.getState() == LockerState.SOLD) {
+            soldOrder(l).ifPresent(o -> {
+                o.setState(OrderState.EXPIRED);
+                events.record(l.getId(), o.getId(), LockerEventType.STATE_CHANGED,
+                    "SOLD → STOCKED, order " + o.getOrderNumber() + " expired by " + actor);
+            });
+        }
         l.setProduct(p);
         l.setState(LockerState.STOCKED);
         l.setStockedAt(now);
@@ -75,19 +90,35 @@ public class InventoryService {
         return l;
     }
 
+    /**
+     * STOCKED → EMPTY. Also SOLD → EMPTY: the buyer got the bag some other way (an admin opened the
+     * door, or handed it over); the order becomes PICKED_UP and its link can no longer open the door.
+     */
     @Transactional
     public Locker empty(UUID lockerId, String actor) {
         Locker l = get(lockerId);
-        if (l.getState() != LockerState.STOCKED) {
-            throw ApiException.conflict("INVALID_STATE", "Only STOCKED lockers can be emptied (current: " + l.getState() + ")");
+        if (l.getState() != LockerState.STOCKED && l.getState() != LockerState.SOLD) {
+            throw ApiException.conflict("INVALID_STATE", "Only STOCKED or SOLD lockers can be emptied (current: " + l.getState() + ")");
         }
         Instant now = clock.instant();
+        if (l.getState() == LockerState.SOLD) {
+            soldOrder(l).ifPresent(o -> {
+                o.setState(OrderState.PICKED_UP);
+                o.setPickedUpAt(now);
+                events.record(l.getId(), o.getId(), LockerEventType.STATE_CHANGED,
+                    "SOLD → EMPTY, order " + o.getOrderNumber() + " marked picked up by " + actor);
+            });
+        }
         l.setProduct(null);
         l.setStockedAt(null);
         l.setState(LockerState.EMPTY);
         l.setUpdatedAt(now);
         events.record(l.getId(), null, LockerEventType.EMPTIED, "by " + actor);
         return l;
+    }
+
+    private java.util.Optional<Order> soldOrder(Locker l) {
+        return orders.findFirstByLockerIdAndStateInOrderByCreatedAtDesc(l.getId(), List.of(OrderState.PAID));
     }
 
     @Transactional

@@ -25,6 +25,7 @@ class OrderFlowIT {
 
     @Autowired OrderService orderService;
     @Autowired PickupService pickupService;
+    @Autowired InventoryService inventoryService;
     @Autowired SiteRepository sites;
     @Autowired ProductRepository products;
     @Autowired LockerRepository lockers;
@@ -154,5 +155,54 @@ class OrderFlowIT {
         orderService.cancel(c.orderId(), "admin");
         assertThat(orders.findById(c.orderId()).orElseThrow().getState()).isEqualTo(OrderState.CANCELLED);
         assertThat(lockers.findById(l1.getId()).orElseThrow().getState()).isEqualTo(LockerState.STOCKED);
+    }
+
+    @Test
+    void adminSearch_withoutFilters_listsOrders_andMatchesQuery() {
+        OrderService.Checkout c = orderService.create(site.getId(), product.getId(), "buyer@example.com", null, "et", "127.0.0.1");
+        var page = org.springframework.data.domain.PageRequest.of(0, 50);
+        assertThat(orders.search(null, null, "", page)).extracting(Order::getId).containsExactly(c.orderId());
+        assertThat(orders.search(null, site.getId(), "BUYER@", page)).hasSize(1);
+        assertThat(orders.search(OrderState.PAID, null, "", page)).isEmpty();
+        assertThat(orders.search(null, null, "nobody", page)).isEmpty();
+    }
+
+    @Test
+    void soldLocker_markedEmptied_completesOrder_andLinkCannotOpen() {
+        OrderService.Checkout c = orderService.create(site.getId(), product.getId(), "buyer@example.com", null, "et", "127.0.0.1");
+        orderService.markPaid(c.orderId(), "ref-1");
+        assertThat(lockers.findById(l1.getId()).orElseThrow().getState()).isEqualTo(LockerState.SOLD);
+
+        inventoryService.empty(l1.getId(), "admin");
+
+        Locker l = lockers.findById(l1.getId()).orElseThrow();
+        assertThat(l.getState()).isEqualTo(LockerState.EMPTY);
+        assertThat(l.getProduct()).isNull();
+        Order o = orders.findById(c.orderId()).orElseThrow();
+        assertThat(o.getState()).isEqualTo(OrderState.PICKED_UP);
+        assertThat(o.getPickedUpAt()).isNotNull();
+        assertThat(pickupService.cannotOpenReason(o)).contains("REOPEN_WINDOW_CLOSED");
+    }
+
+    @Test
+    void soldLocker_stockedAgain_expiresOrder_andGoesBackOnSale() {
+        OrderService.Checkout c = orderService.create(site.getId(), product.getId(), "buyer@example.com", null, "et", "127.0.0.1");
+        orderService.markPaid(c.orderId(), "ref-1");
+
+        inventoryService.stock(l1.getId(), product.getId(), "admin");
+
+        Locker l = lockers.findById(l1.getId()).orElseThrow();
+        assertThat(l.getState()).isEqualTo(LockerState.STOCKED);
+        assertThat(l.getProduct().getId()).isEqualTo(product.getId());
+        Order o = orders.findById(c.orderId()).orElseThrow();
+        assertThat(o.getState()).isEqualTo(OrderState.EXPIRED);
+        assertThat(pickupService.cannotOpenReason(o)).contains("EXPIRED");
+    }
+
+    @Test
+    void reservedLocker_cannotBeEmptiedOrStocked() {
+        orderService.create(site.getId(), product.getId(), "buyer@example.com", null, "et", "127.0.0.1");
+        assertThatThrownBy(() -> inventoryService.empty(l1.getId(), "admin")).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> inventoryService.stock(l1.getId(), product.getId(), "admin")).isInstanceOf(ApiException.class);
     }
 }

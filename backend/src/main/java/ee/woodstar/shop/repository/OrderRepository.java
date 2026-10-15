@@ -24,9 +24,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
         select o from Order o
         where (:state is null or o.state = :state)
           and (:siteId is null or o.site.id = :siteId)
-          and (:q is null or lower(o.email) like lower(concat('%', :q, '%')) or lower(o.orderNumber) like lower(concat('%', :q, '%')))
+          and (lower(o.email) like lower(concat('%', :q, '%')) or lower(o.orderNumber) like lower(concat('%', :q, '%')))
         order by o.createdAt desc
         """)
+    /** {@code q} must not be null: Postgres cannot type a null text parameter here. Pass "" to match all. */
     List<Order> search(@Param("state") OrderState state, @Param("siteId") UUID siteId, @Param("q") String q,
                        org.springframework.data.domain.Pageable pageable);
 

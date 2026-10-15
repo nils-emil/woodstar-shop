@@ -36,6 +36,8 @@ public class PickupService {
             case PAID -> Optional.empty();
             case PICKED_UP -> {
                 if (order.getOpenCount() >= props.getPickup().getMaxOpens()) yield Optional.of("TOO_MANY_OPENS");
+                // handed over by an admin (locker marked emptied) without the buyer ever opening the door
+                if (order.getFirstOpenAt() == null) yield Optional.of("REOPEN_WINDOW_CLOSED");
                 Instant windowEnd = order.getFirstOpenAt().plus(Duration.ofMinutes(props.getPickup().getReopenWindowMinutes()));
                 yield now.isBefore(windowEnd) ? Optional.empty() : Optional.of("REOPEN_WINDOW_CLOSED");
             }

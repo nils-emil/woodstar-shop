@@ -51,6 +51,11 @@ EMPTY --(admin stock)--> STOCKED --(order created)--> RESERVED --(paid)--> SOLD 
                                         |                                     
                                         +--(reservation expired 15 min, unpaid)--> STOCKED
 OUT_OF_ORDER can be set/cleared by admin from EMPTY/STOCKED only.
+Admin can also resolve a SOLD locker whose bag was not collected through the link:
+- "Mark emptied": SOLD → EMPTY, the PAID order → PICKED_UP (`picked_up_at = now`, `first_open_at` stays null,
+  so the link can no longer open the door: `REOPEN_WINDOW_CLOSED`).
+- "Mark stocked again": SOLD → STOCKED (product chosen by admin, `stocked_at = now`), the PAID order → EXPIRED
+  without a refund (refunds go through cancelling the order).
 ```
 
 Locker allocation when an order is created: pick the STOCKED locker at the site
@@ -174,10 +179,12 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL_FROM` | `spring.mail.*`, `woodstar.mail.from` | empty → log only |
 | `PICKUP_DEADLINE_HOURS` | `woodstar.pickup.deadline-hours` | 48 |
 
-`dev` profile additionally seeds demo data if the `site` table is empty: site "Woodstar Tallinn"
-(Peterburi tee 2, Tallinn, 59.4339/24.8067), products "Kuivad kaseklotsid 40 L" (1200 c) and
-"Segapuu 40 L" (900 c), lockers A1..A6 with device ids `shellyplus1-dev0001`..`dev0006`,
-A1–A3 stocked with product 1, A4–A5 stocked with product 2, A6 EMPTY.
+`dev` profile additionally seeds demo data if the `site` table is empty: products "Kuivad kaseklotsid 40 L"
+(1200 c) and "Segapuu 40 L" (900 c), and two sites:
+- "Lillemäe" (Lillemäe, Paatna, 44411 Lääne-Viru maakond): lockers A1..A6, device ids `shellyplus1-dev0001`..`dev0006`,
+  A1–A3 stocked with product 1, A4–A5 with product 2, A6 EMPTY.
+- "Rakvere Põhjakeskus" (Põhjakeskus, Rakvere): lockers A1..A4, device ids `shellyplus1-dev0101`..`dev0104`,
+  A1–A2 stocked with product 1, A3 with product 2, A4 EMPTY.
 
 ## Frontend routes
 

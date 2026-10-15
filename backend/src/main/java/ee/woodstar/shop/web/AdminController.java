@@ -197,7 +197,7 @@ public class AdminController {
     public List<OrderAdmin> listOrders(@RequestParam(required = false) OrderState state,
                                        @RequestParam(required = false) UUID siteId,
                                        @RequestParam(required = false) String q) {
-        String query = q == null || q.isBlank() ? null : q.trim();
+        String query = q == null ? "" : q.trim();
         return orders.search(state, siteId, query, PageRequest.of(0, 200)).stream().map(OrderAdmin::of).toList();
     }
 
