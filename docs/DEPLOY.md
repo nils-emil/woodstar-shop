@@ -66,8 +66,8 @@ Repository → Settings → Secrets and variables → Actions.
 | `MAKSEKESKUS_BASE_URL` | optional; set `https://api.test.maksekeskus.ee/v1` while testing with a test shop |
 | `PICKUP_DEADLINE_HOURS` | optional, default 48 |
 
-Create a `production` environment under Settings → Environments if you want a required
-reviewer before each deploy; the deploy job already targets it.
+The deploy job runs in the GitHub environment `test` (Settings → Environments). Secrets and
+variables can live either there or at repository level; environment values win when both exist.
 
 ## 3. First release
 
