@@ -25,7 +25,7 @@ with your Hetzner Storage Box or restic if the data matters; a VM disk is not a 
 ## 1. Server
 
 - Hetzner Cloud, Ubuntu 24.04 (CX22 is plenty), Helsinki datacenter for lowest latency to Estonia.
-- Add your SSH key when creating it. Deploys log in as `root` (the scripts run with `sudo -E`, which is a no-op for root).
+- Add your SSH key when creating it. Deploys log in as `root` and run `ops/bootstrap.sh` and `ops/deploy.sh` directly (a non-root user gets `sudo --preserve-env=<list>`; newer sudo ignores `-E`).
 - On the server, as root, create a key pair just for GitHub Actions and authorise it:
 
 ```bash

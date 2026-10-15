@@ -169,5 +169,12 @@ jobs:
             set -eu
             cd /opt/woodstar
             chmod +x ops/*.sh infra/mosquitto/add-user.sh
-            sudo -E ops/bootstrap.sh
-            sudo -E ops/deploy.sh "$IMAGE_TAG"
+            # As root run the scripts directly. Otherwise use sudo with an explicit list:
+            # newer sudo (sudo-rs) ignores -E and would drop the deploy settings.
+            if [ "$(id -u)" -eq 0 ]; then
+              SUDO=""
+            else
+              SUDO="sudo --preserve-env=IMAGE_TAG,IMAGE_PREFIX,GHCR_PAT,GH_ACTOR,DOMAIN,ADMIN_USERNAME,SMTP_HOST,SMTP_PORT,MAIL_FROM,MAKSEKESKUS_BASE_URL,PICKUP_DEADLINE_HOURS,DB_PASSWORD,ADMIN_PASSWORD,MQTT_PASSWORD,MAKSEKESKUS_SHOP_ID,MAKSEKESKUS_SECRET_KEY,SMTP_USERNAME,SMTP_PASSWORD"
+            fi
+            $SUDO ops/bootstrap.sh
+            $SUDO ops/deploy.sh "$IMAGE_TAG"
