@@ -32,6 +32,7 @@ export const en: Record<TranslationKey, string> = {
   step2: 'The opening link arrives by email',
   step3: 'At the locker, press “Open locker” in the link',
   salesClosed: 'Sales open soon. You can already see the lockers and bags; ordering starts shortly.',
+  demoNotice: 'Demo: no money is taken and the door opens as a simulation.',
   invalidEmail: 'Please enter a valid email address',
   noSites: 'No locations are available right now.',
 

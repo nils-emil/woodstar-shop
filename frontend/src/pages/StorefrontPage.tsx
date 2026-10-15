@@ -216,6 +216,7 @@ export function StorefrontPage() {
                   <p className="small text-ink-3 text-center">
                     {t('vatIncluded')} · {t('paymentBy')}
                   </p>
+                  {status.data?.demo && <p className="small font-semibold text-center">{t('demoNotice')}</p>}
                 </div>
               </>
             )}

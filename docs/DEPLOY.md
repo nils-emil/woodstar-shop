@@ -65,6 +65,7 @@ Repository → Settings → Secrets and variables → Actions.
 | `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM` | optional |
 | `MAKSEKESKUS_BASE_URL` | optional; set `https://api.test.maksekeskus.ee/v1` while testing with a test shop |
 | `PICKUP_DEADLINE_HOURS` | optional, default 48 |
+| `DEMO_MODE` | **test servers only.** `true` = sales open with mocked payments (no money taken) and mocked locker doors (MQTT off); the storefront says it is a demo. Remove it before real sales: anyone could take wood for free once real lockers are connected |
 
 The deploy job runs in the GitHub environment `test` (Settings → Environments). Secrets and
 variables can live either there or at repository level; environment values win when both exist.

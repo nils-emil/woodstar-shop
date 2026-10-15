@@ -78,7 +78,7 @@ function qs(params: Record<string, string | undefined>): string {
 // ---- public ----
 export const api = {
   sites: () => get<PublicSite[]>('/api/sites'),
-  status: () => get<{ salesOpen: boolean }>('/api/status'),
+  status: () => get<{ salesOpen: boolean; demo: boolean }>('/api/status'),
   createOrder: (req: CreateOrderRequest) => post<CreateOrderResponse>('/api/orders', req),
   order: (id: string) => get<PublicOrder>(`/api/orders/${encodeURIComponent(id)}`),
   pickup: (token: string) => get<PickupInfo>(`/api/pickup/${encodeURIComponent(token)}`),

@@ -33,10 +33,10 @@ public class PublicController {
     private final OrderService orderService;
     private final ee.woodstar.shop.payment.PaymentGateway paymentGateway;
 
-    /** Whether the storefront may take orders (false until a payment provider is configured). */
+    /** Whether the storefront may take orders, and whether payments are mocked (demo). */
     @GetMapping("/status")
     public ShopStatus status() {
-        return new ShopStatus(paymentGateway.acceptsPayments());
+        return new ShopStatus(paymentGateway.acceptsPayments(), "fake".equals(paymentGateway.providerName()));
     }
 
     @GetMapping("/sites")

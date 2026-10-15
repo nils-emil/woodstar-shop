@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class WoodstarProperties {
     private String publicBaseUrl = "http://localhost:3000";
     private boolean seedDemoData = false;
+    /** Test servers: mocked payments and doors are allowed even with the prod profile. */
+    private boolean demoMode = false;
     private Admin admin = new Admin();
     private Payments payments = new Payments();
     private Mqtt mqtt = new Mqtt();
@@ -17,7 +19,7 @@ public class WoodstarProperties {
     private Order order = new Order();
 
     @Getter @Setter public static class Admin { private String username = "admin"; private String password = "admin"; }
-    @Getter @Setter public static class Payments { private String provider = "fake"; private Maksekeskus maksekeskus = new Maksekeskus(); }
+    @Getter @Setter public static class Payments { private String provider = "none"; private Maksekeskus maksekeskus = new Maksekeskus(); }
     @Getter @Setter public static class Maksekeskus {
         private String shopId = "";
         private String secretKey = "";

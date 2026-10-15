@@ -21,7 +21,11 @@ log() { echo "==> $*"; }
 # Only rendered from the workflow's environment; nothing secret is stored in git.
 render_env() {
     # Without Maksekeskus keys the shop runs with sales closed (provider "none"), never "fake".
-    if [ -n "${MAKSEKESKUS_SHOP_ID:-}" ] && [ -n "${MAKSEKESKUS_SECRET_KEY:-}" ]; then provider=maksekeskus; else provider=none; fi
+    # DEMO_MODE=true (test servers only): mocked payments and mocked doors, for showing the shop.
+    mqtt_enabled=true
+    if [ "${DEMO_MODE:-false}" = true ]; then provider=fake; mqtt_enabled=false
+    elif [ -n "${MAKSEKESKUS_SHOP_ID:-}" ] && [ -n "${MAKSEKESKUS_SECRET_KEY:-}" ]; then provider=maksekeskus
+    else provider=none; fi
     umask 077
     cat > .env <<EOF
 # Rendered by ops/deploy.sh on $(date -u +%FT%TZ). Do not edit by hand; change GitHub secrets/variables.
@@ -35,10 +39,11 @@ DB_PASSWORD=$DB_PASSWORD
 ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 PAYMENTS_PROVIDER=$provider
+DEMO_MODE=${DEMO_MODE:-false}
 MAKSEKESKUS_SHOP_ID=${MAKSEKESKUS_SHOP_ID:-}
 MAKSEKESKUS_SECRET_KEY=${MAKSEKESKUS_SECRET_KEY:-}
 MAKSEKESKUS_BASE_URL=${MAKSEKESKUS_BASE_URL:-https://api.maksekeskus.ee/v1}
-MQTT_ENABLED=true
+MQTT_ENABLED=$mqtt_enabled
 MQTT_USERNAME=backend
 MQTT_PASSWORD=$MQTT_PASSWORD
 MQTT_PASSWD_FILE=./infra/mosquitto/passwd

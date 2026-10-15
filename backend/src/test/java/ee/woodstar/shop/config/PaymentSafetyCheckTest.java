@@ -16,17 +16,22 @@ class PaymentSafetyCheckTest {
 
     @Test
     void prodWithFakePayments_refusesToStart() {
-        assertThatThrownBy(() -> new PaymentSafetyCheck(env("prod"), "fake")).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new PaymentSafetyCheck(env("prod"), "fake", false)).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void prodWithoutProvider_orMaksekeskus_starts() {
-        assertThatCode(() -> new PaymentSafetyCheck(env("prod"), "none")).doesNotThrowAnyException();
-        assertThatCode(() -> new PaymentSafetyCheck(env("prod"), "maksekeskus")).doesNotThrowAnyException();
+        assertThatCode(() -> new PaymentSafetyCheck(env("prod"), "none", false)).doesNotThrowAnyException();
+        assertThatCode(() -> new PaymentSafetyCheck(env("prod"), "maksekeskus", false)).doesNotThrowAnyException();
     }
 
     @Test
     void devWithFakePayments_starts() {
-        assertThatCode(() -> new PaymentSafetyCheck(env("dev"), "fake")).doesNotThrowAnyException();
+        assertThatCode(() -> new PaymentSafetyCheck(env("dev"), "fake", false)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void prodWithFakePayments_inDemoMode_starts() {
+        assertThatCode(() -> new PaymentSafetyCheck(env("prod"), "fake", true)).doesNotThrowAnyException();
     }
 }
