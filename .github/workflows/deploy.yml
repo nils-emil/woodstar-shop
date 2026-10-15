@@ -110,9 +110,9 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          MQTT_PASSWORD: ${{ secrets.MQTT_PASSWORD }}
+          DB_PASSWORD: ${{ vars.DB_PASSWORD || secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD || secrets.ADMIN_PASSWORD }}
+          MQTT_PASSWORD: ${{ vars.MQTT_PASSWORD || secrets.MQTT_PASSWORD }}
           MAKSEKESKUS_SHOP_ID: ${{ secrets.MAKSEKESKUS_SHOP_ID }}
           MAKSEKESKUS_SECRET_KEY: ${{ secrets.MAKSEKESKUS_SECRET_KEY }}
         run: |
@@ -153,9 +153,9 @@ jobs:
           MAIL_FROM: ${{ vars.MAIL_FROM }}
           MAKSEKESKUS_BASE_URL: ${{ vars.MAKSEKESKUS_BASE_URL }}
           PICKUP_DEADLINE_HOURS: ${{ vars.PICKUP_DEADLINE_HOURS }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          MQTT_PASSWORD: ${{ secrets.MQTT_PASSWORD }}
+          DB_PASSWORD: ${{ vars.DB_PASSWORD || secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD || secrets.ADMIN_PASSWORD }}
+          MQTT_PASSWORD: ${{ vars.MQTT_PASSWORD || secrets.MQTT_PASSWORD }}
           MAKSEKESKUS_SHOP_ID: ${{ secrets.MAKSEKESKUS_SHOP_ID }}
           MAKSEKESKUS_SECRET_KEY: ${{ secrets.MAKSEKESKUS_SECRET_KEY }}
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
