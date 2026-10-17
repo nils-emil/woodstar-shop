@@ -39,7 +39,7 @@ device's local HTTP RPC (`MQTT.SetConfig`, `Shelly.Reboot`); if the device has a
 |---|---|
 | Enable MQTT | on |
 | Server / Username / Password | from the dialog |
-| Client ID / MQTT prefix | leave as the device id (default) |
+| Client ID / MQTT prefix | the device id, same as the username (the Shelly's default). Never empty or anything else: the backend sends to `<deviceId>/rpc` and the broker only lets the device use `<deviceId>/#` |
 | Enable RPC over MQTT | **on** |
 | RPC status notifications | on |
 | Generic status update over MQTT | on |

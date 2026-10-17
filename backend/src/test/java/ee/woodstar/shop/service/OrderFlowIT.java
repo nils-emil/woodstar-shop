@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class OrderFlowIT {
 
     @Autowired OrderService orderService;
+    @Autowired ee.woodstar.shop.web.PublicController publicController;
     @Autowired PickupService pickupService;
     @Autowired InventoryService inventoryService;
     @Autowired SiteRepository sites;
@@ -96,6 +97,22 @@ class OrderFlowIT {
         assertThat(events.findByOrderIdOrderByCreatedAtAsc(c.orderId()))
             .extracting(LockerEvent::getType)
             .contains(LockerEventType.OPEN_REQUESTED, LockerEventType.OPEN_CONFIRMED, LockerEventType.EMPTIED);
+    }
+
+    @Test
+    void orderWithoutEmail_isPaidAndOpened_butCannotBeEmailed() {
+        OrderService.Checkout c = orderService.create(site.getId(), product.getId(), "  ", null, "et", "127.0.0.1");
+        assertThat(orders.findById(c.orderId()).orElseThrow().getEmail()).isNull();
+        orderService.markPaid(c.orderId(), "ref-no-email");
+        Order o = orders.findById(c.orderId()).orElseThrow();
+        assertThat(o.getState()).isEqualTo(OrderState.PAID);
+        var view = publicController.order(c.orderId());
+        assertThat(view.hasEmail()).isFalse();
+        assertThat(view.pickupToken()).isEqualTo(o.getPickupToken());
+        assertThatThrownBy(() -> orderService.resendEmail(c.orderId()))
+            .isInstanceOf(ApiException.class).hasMessageContaining("no email");
+        pickupService.open(o.getPickupToken());
+        assertThat(orders.findById(c.orderId()).orElseThrow().getState()).isEqualTo(OrderState.PICKED_UP);
     }
 
     @Test

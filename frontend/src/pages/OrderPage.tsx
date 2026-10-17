@@ -96,7 +96,11 @@ export function OrderPage() {
           <ArrowRight size={24} aria-hidden="true" />
         </Link>
       )}
-      <p className="enter" style={{ ['--i' as string]: 3 }}>{t('pickupLinkSent')}</p>
+      {order.hasEmail ? (
+        <p className="enter" style={{ ['--i' as string]: 3 }}>{t('pickupLinkSent')}</p>
+      ) : (
+        <Alert tone="warning" className="enter">{t('pickupLinkOnlyHere')}</Alert>
+      )}
     </div>
   )
 }

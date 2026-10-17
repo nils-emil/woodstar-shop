@@ -61,7 +61,7 @@ public class OrderService {
             .product(product)
             .productName(product.nameFor(loc))
             .priceCents(product.getPriceCents())
-            .email(email.trim())
+            .email(email == null || email.isBlank() ? null : email.trim())
             .phone(phone == null || phone.isBlank() ? null : phone.trim())
             .locale(loc)
             .state(OrderState.PENDING_PAYMENT)
@@ -148,6 +148,9 @@ public class OrderService {
         Order order = orders.findById(orderId).orElseThrow(() -> ApiException.notFound("Order"));
         if (order.getState() != OrderState.PAID && order.getState() != OrderState.PICKED_UP) {
             throw new ApiException(HttpStatus.CONFLICT, "INVALID_STATE", "Order is not paid");
+        }
+        if (order.getEmail() == null) {
+            throw ApiException.conflict("NO_EMAIL", "The buyer gave no email address");
         }
         mailService.sendPickupEmail(order);
     }

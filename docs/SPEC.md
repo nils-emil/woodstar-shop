@@ -38,7 +38,7 @@ All ids are UUID (generated in Java, `UUID.randomUUID()`), all timestamps `TIMES
 - `product`: id, name_et, name_en, description_et, description_en, price_cents int, active bool, sort_order int, created_at
 - `locker`: id, site_id FK, label (e.g. "A1"), shelly_device_id (e.g. `shellyplus1-a8032abcdef0`), relay_channel int default 0, pulse_seconds int default 2, state enum, product_id FK nullable, stocked_at nullable, note text nullable, updated_at. UNIQUE(site_id, label).
   - state: `EMPTY`, `STOCKED`, `RESERVED`, `SOLD`, `OUT_OF_ORDER`
-- `orders`: id, order_number (human readable, e.g. `WS-2026-000123`, unique, sequence-backed), site_id, locker_id, product_id, product_name (snapshot, in the buyer's locale), price_cents, email, phone nullable, locale (`et`/`en`), state enum, pickup_token (unique, 32 url-safe random chars), payment_provider (`maksekeskus`/`fake`), payment_ref nullable (Maksekeskus transaction id), created_at, paid_at nullable, pickup_deadline nullable, picked_up_at nullable, first_open_at nullable, open_count int default 0
+- `orders`: id, order_number (human readable, e.g. `WS-2026-000123`, unique, sequence-backed), site_id, locker_id, product_id, product_name (snapshot, in the buyer's locale), price_cents, email nullable, phone nullable, locale (`et`/`en`), state enum, pickup_token (unique, 32 url-safe random chars), payment_provider (`maksekeskus`/`fake`), payment_ref nullable (Maksekeskus transaction id), created_at, paid_at nullable, pickup_deadline nullable, picked_up_at nullable, first_open_at nullable, open_count int default 0
   - state: `PENDING_PAYMENT`, `PAID`, `PICKED_UP`, `EXPIRED`, `CANCELLED`, `REFUNDED`
 - `locker_event`: id, locker_id, order_id nullable, type, detail text nullable, created_at
   - type: `OPEN_REQUESTED`, `OPEN_CONFIRMED`, `OPEN_FAILED`, `STOCKED`, `EMPTIED`, `STATE_CHANGED`
@@ -69,7 +69,7 @@ If none is available → HTTP 409 `{"error":"SOLD_OUT"}`.
    payment gateway, return `{orderId, checkoutUrl}`. Frontend redirects to `checkoutUrl`.
 2. Payment gateway confirms (Maksekeskus notification with status `COMPLETED`, or the fake gateway's
    redirect) → `OrderService.markPaid(orderId, paymentRef)`: order `PAID`, `paid_at=now`,
-   `pickup_deadline = now + woodstar.pickup.deadline (default 48h)`, locker `SOLD`, send pickup email.
+   `pickup_deadline = now + woodstar.pickup.deadline (default 48h)`, locker `SOLD`, send pickup email (skipped when the buyer gave no email; the order page shows the link either way).
    Must be idempotent (second call is a no-op).
 3. Customer opens `/pickup/{token}` and presses Open → `PickupService.open(token)`:
    - allowed when order is `PAID`, or `PICKED_UP` and `now < first_open_at + woodstar.pickup.reopen-window (default 30m)`
@@ -119,7 +119,7 @@ public interface PaymentGateway {
 ```
 
 - Maksekeskus (MakeCommerce): `POST {baseUrl}/transactions` with HTTP Basic auth `shopId:secretKey`, body
-  `{transaction: {amount "12.00", currency EUR, reference orderNumber, merchant_data orderId, transaction_url: {return_url GET, cancel_url GET, notification_url POST}}, customer: {ip, email, country "ee", locale}}`.
+  `{transaction: {amount "12.00", currency EUR, reference orderNumber, merchant_data orderId, transaction_url: {return_url GET, cancel_url GET, notification_url POST}}, customer: {ip, email (left out when none), country "ee", locale}}`.
   Store the returned `id` in `payment_ref`; redirect to `payment_methods.other[name=redirect].url` (the hosted page where the
   buyer picks a bank link or card). Notification `POST /api/webhooks/maksekeskus` arrives as form fields `json` + `mac`;
   `mac` must equal upper-case hex SHA-512 of `json + secretKey`. Only status `COMPLETED` with an amount equal to the order price
@@ -142,8 +142,8 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
 - `GET /api/sites` → `[{id, name, address, lat, lng, products:[{id, nameEt, nameEn, descriptionEt, descriptionEn, priceCents, available}]}]`
   Only active sites/products; `available` = STOCKED locker count for that product at the site.
 - `GET /api/status` → `{salesOpen, demo}` (salesOpen false while no payment provider is configured; demo true when payments are mocked)
-- `POST /api/orders` `{siteId, productId, email, phone?, locale}` → `201 {orderId, checkoutUrl}` / `409 SOLD_OUT`
-- `GET /api/orders/{id}` → `{id, orderNumber, state, siteName, siteAddress, lockerLabel, productName, priceCents, pickupToken (only when state is PAID or PICKED_UP), pickupDeadline}`
+- `POST /api/orders` `{siteId, productId, email?, phone?, locale}` → `201 {orderId, checkoutUrl}` / `409 SOLD_OUT`
+- `GET /api/orders/{id}` → `{id, orderNumber, state, siteName, siteAddress, lockerLabel, productName, priceCents, pickupToken (only when state is PAID or PICKED_UP), pickupDeadline, hasEmail}`
 - `GET /api/pickup/{token}` → `{orderNumber, state, siteName, siteAddress, lockerLabel, productName, pickupDeadline, canOpen, cannotOpenReason?, opensRemaining, deviceOnline}`
 - `POST /api/pickup/{token}/open` → `200 {ok:true, opensRemaining}` / `409 {error: reason}` / `503 DEVICE_UNREACHABLE`
 - `POST /api/webhooks/maksekeskus` (form fields `json` + `mac`)
@@ -163,7 +163,7 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
   `POST /{id}/out-of-order` `{outOfOrder: bool}`, `POST /{id}/open` (manual open, any state, logs event with detail "admin:<username>")
   `GET /api/admin/lockers/{id}/events` → last 100 events
 - Orders: `GET /api/admin/orders?state=&siteId=&q=` (newest first, limit 200) → `[{id, orderNumber, state, siteName, lockerLabel, productName, priceCents, email, phone, createdAt, paidAt, pickupDeadline, pickedUpAt, openCount}]`
-  `GET /api/admin/orders/{id}` (same + events), `POST /{id}/cancel`, `POST /{id}/resend-email`
+  `GET /api/admin/orders/{id}` (same + events), `POST /{id}/cancel`, `POST /{id}/resend-email` (409 `NO_EMAIL` when the buyer gave none)
 - `GET /api/admin/devices` → `[{deviceId, online, lockers:[{id,label,siteName}], loginIssuedAt}]` (lockers' device ids plus devices with a broker login)
   `POST /api/admin/devices/login` `{deviceId}` → `{deviceId, server, username, password, live}`: creates the device's broker login
   or replaces its password. The only response that ever contains the password; the app stores none (`device_login` keeps who/when).
@@ -193,7 +193,7 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
 
 ## Frontend routes
 
-- `/` storefront: choose site → choose product (shows availability, price) → email + phone → Buy. `?cancelled=1` shows a notice.
+- `/` storefront: choose site → choose product (shows availability, price) → email + phone (both optional) → Buy. `?cancelled=1` shows a notice.
 - `/order/:id` post-checkout: polls `GET /api/orders/{id}` every 2 s until PAID/PICKED_UP; shows locker + big "Open locker" link to `/pickup/:token`.
 - `/pickup/:token` big "Open locker" button; shows site address, locker label, remaining opens, deadline; error states.
 - `/admin/login`, `/admin` (dashboard), `/admin/lockers` (per-site grid of locker tiles coloured by state, click → drawer with stock/empty/out-of-order/open/events), `/admin/orders`, `/admin/products`, `/admin/sites`, `/admin/devices`.

@@ -35,7 +35,7 @@ export interface PublicSite {
 export interface CreateOrderRequest {
   siteId: string
   productId: string
-  email: string
+  email?: string
   phone?: string
   locale: Locale
 }
@@ -56,6 +56,7 @@ export interface PublicOrder {
   priceCents: number
   pickupToken?: string | null
   pickupDeadline: string | null
+  hasEmail: boolean
 }
 
 export interface PickupInfo {
@@ -183,7 +184,7 @@ export interface AdminOrder {
   lockerLabel: string
   productName: string
   priceCents: number
-  email: string
+  email: string | null
   phone: string | null
   createdAt: string
   paidAt: string | null

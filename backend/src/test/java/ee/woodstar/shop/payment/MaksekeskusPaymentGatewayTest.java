@@ -54,6 +54,15 @@ class MaksekeskusPaymentGatewayTest {
     }
 
     @Test
+    void transactionBody_leavesOutEmailWhenBuyerGaveNone() {
+        Order o = order();
+        o.setEmail(null);
+        Map<?, ?> customer = (Map<?, ?>) MaksekeskusPaymentGateway.buildTransactionBody(o, "a", "b", "c", "1.2.3.4").get("customer");
+        assertThat(customer.containsKey("email")).isFalse();
+        assertThat(customer.get("ip")).isEqualTo("1.2.3.4");
+    }
+
+    @Test
     void transactionBody_fallsBackToLoopbackWhenIpUnknown() {
         Map<String, Object> body = MaksekeskusPaymentGateway.buildTransactionBody(order(), "a", "b", "c", null);
         assertThat(((Map<?, ?>) body.get("customer")).get("ip")).isEqualTo("127.0.0.1");

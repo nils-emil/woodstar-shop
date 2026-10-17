@@ -31,7 +31,12 @@ public class MailService {
         this.sender = smtpConfigured ? senderProvider.getIfAvailable() : null;
     }
 
+    /** Does nothing for an order without an email address: the buyer has the link on the order page only. */
     public void sendPickupEmail(Order order) {
+        if (order.getEmail() == null) {
+            log.info("Order {} has no email address; no pickup email sent", order.getOrderNumber());
+            return;
+        }
         String link = props.getPublicBaseUrl() + "/pickup/" + order.getPickupToken();
         String deadline = order.getPickupDeadline() == null ? "-" : DEADLINE_FMT.format(order.getPickupDeadline());
         boolean en = "en".equalsIgnoreCase(order.getLocale());

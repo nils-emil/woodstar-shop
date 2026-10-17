@@ -48,7 +48,7 @@ export function StorefrontPage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!site || !product) return
-    if (!EMAIL_RE.test(email.trim())) {
+    if (email.trim() && !EMAIL_RE.test(email.trim())) {
       setEmailError(t('invalidEmail'))
       return
     }
@@ -59,7 +59,7 @@ export function StorefrontPage() {
       const res = await api.createOrder({
         siteId: site.id,
         productId: product.id,
-        email: email.trim(),
+        email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         locale,
       })
@@ -195,12 +195,11 @@ export function StorefrontPage() {
               <>
                 <div className="grid gap-4">
                   <Input
-                    label={t('email')}
+                    label={t('emailOptional')}
                     name="email"
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     hint={t('emailHint')}

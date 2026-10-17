@@ -126,7 +126,7 @@ public class MaksekeskusPaymentGateway implements PaymentGateway {
 
         Map<String, Object> customer = new LinkedHashMap<>();
         customer.put("ip", isBlank(customerIp) ? "127.0.0.1" : customerIp);
-        customer.put("email", order.getEmail());
+        if (!isBlank(order.getEmail())) customer.put("email", order.getEmail());
         customer.put("country", "ee");
         customer.put("locale", order.getLocale());
 

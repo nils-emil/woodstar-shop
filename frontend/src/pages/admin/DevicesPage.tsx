@@ -212,6 +212,9 @@ function LoginModal({ login, onClose }: { login: DeviceLogin | null; onClose: ()
   const config = {
     enable: true,
     server: login.server,
+    // Must equal the device id: the backend sends to <deviceId>/rpc and the broker only lets the device use <deviceId>/#.
+    client_id: login.deviceId,
+    topic_prefix: login.deviceId,
     user: login.username,
     pass: login.password,
     enable_rpc: true,

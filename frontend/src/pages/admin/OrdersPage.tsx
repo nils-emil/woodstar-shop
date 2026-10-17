@@ -86,7 +86,7 @@ export function OrdersPage() {
                   <td className="px-4 py-3">{o.productName}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">{formatPrice(o.priceCents)}</td>
                   <td className="px-4 py-3">
-                    <div>{o.email}</div>
+                    <div>{o.email ?? '–'}</div>
                     {o.phone && <div className="text-ink-3">{o.phone}</div>}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-ink-3">{formatDateTime(o.createdAt, locale)}</td>
@@ -170,7 +170,7 @@ function OrderDrawer({ id, onClose, onChanged }: { id: string | null; onClose: (
             <dt className="text-ink-3">{t('locker')}</dt><dd className="font-bold">{order.lockerLabel}</dd>
             <dt className="text-ink-3">{t('product')}</dt><dd>{order.productName}</dd>
             <dt className="text-ink-3">{t('price')}</dt><dd>{formatPrice(order.priceCents)}</dd>
-            <dt className="text-ink-3">{t('email')}</dt><dd className="break-all">{order.email}</dd>
+            <dt className="text-ink-3">{t('email')}</dt><dd className="break-all">{order.email ?? '–'}</dd>
             <dt className="text-ink-3">{t('phone')}</dt><dd>{order.phone ?? '–'}</dd>
             <dt className="text-ink-3">{t('created')}</dt><dd>{formatDateTime(order.createdAt, locale)}</dd>
             <dt className="text-ink-3">{t('paid')}</dt><dd>{formatDateTime(order.paidAt, locale)}</dd>
@@ -182,7 +182,7 @@ function OrderDrawer({ id, onClose, onChanged }: { id: string | null; onClose: (
           {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
 
           <div className="space-y-2">
-            {resendable && (
+            {resendable && order.email && (
               <Button variant="secondary" full icon={<Mail size={18} />} loading={busy === 'resend'} onClick={() => void resend()}>
                 {t('resendEmail')}
               </Button>

@@ -19,16 +19,17 @@ public final class Dtos {
     public record SiteView(UUID id, String name, String address, Double lat, Double lng, List<ProductAvailability> products) {}
 
     public record CreateOrderRequest(@NotNull UUID siteId, @NotNull UUID productId,
-                                     @NotBlank @Email String email, String phone, String locale) {}
+                                     @Email String email, String phone, String locale) {}
     public record CreateOrderResponse(UUID orderId, String checkoutUrl) {}
 
     public record OrderView(UUID id, String orderNumber, OrderState state, String siteName, String siteAddress,
-                            String lockerLabel, String productName, int priceCents, String pickupToken, Instant pickupDeadline) {
+                            String lockerLabel, String productName, int priceCents, String pickupToken, Instant pickupDeadline,
+                            boolean hasEmail) {
         public static OrderView of(Order o) {
             boolean showToken = o.getState() == OrderState.PAID || o.getState() == OrderState.PICKED_UP;
             return new OrderView(o.getId(), o.getOrderNumber(), o.getState(), o.getSite().getName(), o.getSite().getAddress(),
                 o.getLocker().getLabel(), o.getProductName(), o.getPriceCents(),
-                showToken ? o.getPickupToken() : null, o.getPickupDeadline());
+                showToken ? o.getPickupToken() : null, o.getPickupDeadline(), o.getEmail() != null);
         }
     }
 
