@@ -136,7 +136,7 @@ jobs:
           host: ${{ vars.PROD_HOST }}
           username: ${{ vars.SSH_USER || secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yml,docker-compose.prod.yml,infra/caddy/Caddyfile,infra/mosquitto/mosquitto.conf,infra/mosquitto/add-user.sh,ops/*.sh"
+          source: "docker-compose.yml,docker-compose.prod.yml,infra/caddy/Caddyfile,infra/mosquitto/mosquitto.conf,infra/mosquitto/entrypoint.sh,ops/*.sh"
           target: /opt/woodstar
 
       - name: Bootstrap the host and deploy
@@ -169,7 +169,7 @@ jobs:
           script: |
             set -eu
             cd /opt/woodstar
-            chmod +x ops/*.sh infra/mosquitto/add-user.sh
+            chmod +x ops/*.sh infra/mosquitto/entrypoint.sh
             # As root run the scripts directly. Otherwise use sudo with an explicit list:
             # newer sudo (sudo-rs) ignores -E and would drop the deploy settings.
             if [ "$(id -u)" -eq 0 ]; then

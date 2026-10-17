@@ -3,6 +3,7 @@ package ee.woodstar.shop.web;
 import ee.woodstar.shop.domain.*;
 import ee.woodstar.shop.locker.LockerController;
 import ee.woodstar.shop.repository.*;
+import ee.woodstar.shop.service.DeviceService;
 import ee.woodstar.shop.service.InventoryService;
 import ee.woodstar.shop.service.OrderService;
 import ee.woodstar.shop.web.Dtos.*;
@@ -33,6 +34,8 @@ public class AdminController {
     private final LockerRepository lockers;
     private final OrderRepository orders;
     private final LockerEventRepository events;
+    private final DeviceLoginRepository deviceLogins;
+    private final DeviceService deviceService;
     private final InventoryService inventory;
     private final OrderService orderService;
     private final LockerController lockerController;
@@ -221,12 +224,29 @@ public class AdminController {
     }
 
     // ---- devices
+    /** Every device a locker points at, plus devices that have a broker login but no locker yet. */
     @GetMapping("/devices")
     @Transactional(readOnly = true)
     public List<DeviceView> devices() {
         Map<String, List<Locker>> byDevice = lockers.findAllByOrderByLabel().stream()
             .collect(Collectors.groupingBy(Locker::getShellyDeviceId, TreeMap::new, Collectors.toList()));
+        Map<String, Instant> issued = deviceLogins.findAll().stream()
+            .collect(Collectors.toMap(DeviceLogin::getDeviceId, DeviceLogin::getIssuedAt));
+        issued.keySet().forEach(id -> byDevice.putIfAbsent(id, List.of()));
         return byDevice.entrySet().stream().map(e -> new DeviceView(e.getKey(), lockerController.isOnline(e.getKey()),
-            e.getValue().stream().map(l -> new DeviceLocker(l.getId(), l.getLabel(), l.getSite().getName())).toList())).toList();
+            e.getValue().stream().map(l -> new DeviceLocker(l.getId(), l.getLabel(), l.getSite().getName())).toList(),
+            issued.get(e.getKey()))).toList();
+    }
+
+    /** Creates the device's broker login or replaces its password. The response is the only place the password appears. */
+    @PostMapping("/devices/login")
+    public DeviceService.IssuedLogin issueDeviceLogin(@Valid @RequestBody DeviceIdRequest req, Authentication auth) {
+        return deviceService.issueLogin(req.deviceId(), auth.getName());
+    }
+
+    @DeleteMapping("/devices/{deviceId}/login")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void revokeDeviceLogin(@PathVariable String deviceId, Authentication auth) {
+        deviceService.revokeLogin(deviceId, auth.getName());
     }
 }

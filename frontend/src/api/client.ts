@@ -6,6 +6,7 @@ import type {
   AdminOrderDetail,
   AdminProduct,
   AdminSite,
+  DeviceLogin,
   CreateOrderRequest,
   CreateOrderResponse,
   Dashboard,
@@ -67,6 +68,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 const get = <T>(path: string) => request<T>('GET', path)
 const post = <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {})
 const put = <T>(path: string, body: unknown) => request<T>('PUT', path, body)
+const del = <T>(path: string) => request<T>('DELETE', path)
 
 function qs(params: Record<string, string | undefined>): string {
   const p = new URLSearchParams()
@@ -116,4 +118,6 @@ export const admin = {
   resendEmail: (id: string) => post<void>(`/api/admin/orders/${id}/resend-email`),
 
   devices: () => get<AdminDevice[]>('/api/admin/devices'),
+  issueDeviceLogin: (deviceId: string) => post<DeviceLogin>('/api/admin/devices/login', { deviceId }),
+  revokeDeviceLogin: (deviceId: string) => del<void>(`/api/admin/devices/${encodeURIComponent(deviceId)}/login`),
 }

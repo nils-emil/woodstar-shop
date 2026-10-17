@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/** Simulates lockers when no MQTT broker is configured. Device ids containing "offline" fail. */
+/** Simulates lockers and broker logins when no MQTT broker is configured. Device ids containing "offline" fail. */
 @Slf4j
 @Component
 @ConditionalOnProperty(prefix = "woodstar.mqtt", name = "enabled", havingValue = "false", matchIfMissing = true)
-public class FakeLockerController implements LockerController {
+public class FakeLockerController implements LockerController, BrokerAccounts {
 
     @Override
     public OpenResult open(String deviceId, int channel, int pulseSeconds) {
@@ -28,5 +28,21 @@ public class FakeLockerController implements LockerController {
     @Override
     public boolean isOnline(String deviceId) {
         return deviceId == null || !deviceId.toLowerCase().contains("offline");
+    }
+
+    @Override
+    public void setDeviceLogin(String deviceId, String password) {
+        Dynsec.requireValidDeviceId(deviceId);
+        log.info("[fake broker] login set for {} (not enforced: MQTT is off)", deviceId);
+    }
+
+    @Override
+    public void deleteDeviceLogin(String deviceId) {
+        log.info("[fake broker] login removed for {}", deviceId);
+    }
+
+    @Override
+    public boolean isLive() {
+        return false;
     }
 }

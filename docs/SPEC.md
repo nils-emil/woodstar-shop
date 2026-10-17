@@ -164,7 +164,11 @@ Errors: `{"error": "<CODE>", "message": "<human>"}` with 400/404/409/503.
   `GET /api/admin/lockers/{id}/events` → last 100 events
 - Orders: `GET /api/admin/orders?state=&siteId=&q=` (newest first, limit 200) → `[{id, orderNumber, state, siteName, lockerLabel, productName, priceCents, email, phone, createdAt, paidAt, pickupDeadline, pickedUpAt, openCount}]`
   `GET /api/admin/orders/{id}` (same + events), `POST /{id}/cancel`, `POST /{id}/resend-email`
-- `GET /api/admin/devices` → `[{deviceId, online, lockers:[{id,label,siteName}]}]`
+- `GET /api/admin/devices` → `[{deviceId, online, lockers:[{id,label,siteName}], loginIssuedAt}]` (lockers' device ids plus devices with a broker login)
+  `POST /api/admin/devices/login` `{deviceId}` → `{deviceId, server, username, password, live}`: creates the device's broker login
+  or replaces its password. The only response that ever contains the password; the app stores none (`device_login` keeps who/when).
+  Device ids are `[A-Za-z0-9][A-Za-z0-9-]{2,63}` (400 `INVALID_DEVICE_ID`); broker down → 503 `BROKER_UNREACHABLE`.
+  `DELETE /api/admin/devices/{deviceId}/login` → 204
 
 ## Config / env vars
 

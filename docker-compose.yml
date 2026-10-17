@@ -27,8 +27,13 @@ services:
       - "1883:1883"
     volumes:
       - ./infra/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - ${MQTT_PASSWD_FILE:-./infra/mosquitto/passwd.dev}:/mosquitto/config/passwd:ro
+      - ./infra/mosquitto/entrypoint.sh:/woodstar-entrypoint.sh:ro
       - mosquitto_data:/mosquitto/data
+    # Creates the backend's admin login in the Dynamic Security file; device logins are made in admin → Devices.
+    entrypoint: ["/bin/sh", "/woodstar-entrypoint.sh"]
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME:-backend}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-backend}
 
   backend:
     build: ./backend

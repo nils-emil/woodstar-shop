@@ -88,5 +88,6 @@ public final class Dtos {
     public record Dashboard(List<SiteStats> sites, long ordersToday, long revenueTodayCents, long paidAwaitingPickup, long overduePickups) {}
 
     public record DeviceLocker(UUID id, String label, String siteName) {}
-    public record DeviceView(String deviceId, boolean online, List<DeviceLocker> lockers) {}
+    public record DeviceView(String deviceId, boolean online, List<DeviceLocker> lockers, Instant loginIssuedAt) {}
+    public record DeviceIdRequest(@NotBlank String deviceId) {}
 }

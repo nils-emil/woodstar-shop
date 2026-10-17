@@ -80,6 +80,9 @@ woodstar:
     tls: ${MQTT_TLS:false}
     client-id-prefix: woodstar-backend
     rpc-timeout-seconds: 5
+    # what the Shellys dial; empty = the host of public-base-url (puukapp.ee)
+    public-host: ${MQTT_PUBLIC_HOST:}
+    public-port: ${MQTT_PUBLIC_PORT:1883}
   mail:
     from: ${MAIL_FROM:noreply@puukapp.ee}
   pickup:

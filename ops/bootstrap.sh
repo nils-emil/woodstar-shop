@@ -68,8 +68,6 @@ fi
 # --- Layout -----------------------------------------------------------------
 mkdir -p "$APP_DIR/infra/mosquitto" "$APP_DIR/infra/caddy" "$APP_DIR/backups" "$APP_DIR/ops"
 chmod 700 "$APP_DIR/backups"
-touch "$APP_DIR/infra/mosquitto/passwd"
-chmod 600 "$APP_DIR/infra/mosquitto/passwd"
 
 # --- Nightly backup ---------------------------------------------------------
 cat > /etc/cron.d/woodstar-backup <<EOF

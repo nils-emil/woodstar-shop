@@ -35,6 +35,9 @@ public class WoodstarProperties {
         private boolean tls = false;
         private String clientIdPrefix = "woodstar-backend";
         private int rpcTimeoutSeconds = 5;
+        /** Broker address the Shellys dial, shown in admin → Devices. Empty = the host of public-base-url. */
+        private String publicHost = "";
+        private int publicPort = 1883;
     }
     @Getter @Setter public static class Mail { private String from = "noreply@puukapp.ee"; }
     @Getter @Setter public static class Pickup { private int deadlineHours = 48; private int reopenWindowMinutes = 30; private int maxOpens = 5; }

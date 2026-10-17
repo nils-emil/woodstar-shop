@@ -200,6 +200,16 @@ export interface AdminDevice {
   deviceId: string
   online: boolean
   lockers: { id: string; label: string; siteName: string }[]
+  loginIssuedAt: string | null
+}
+
+/** Returned once when a device login is created or its password replaced. */
+export interface DeviceLogin {
+  deviceId: string
+  server: string
+  username: string
+  password: string
+  live: boolean
 }
 
 export interface OrderFilters {

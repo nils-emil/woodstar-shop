@@ -59,7 +59,7 @@ Repository → Settings → Secrets and variables → Actions.
 | `SSH_USER` | `root` (variable or secret) |
 | `DB_PASSWORD` | strong random string (may also be a secret; a variable is visible in settings and logs) |
 | `ADMIN_PASSWORD` | initial admin password, seeded only when the admin table is empty (variable or secret) |
-| `MQTT_PASSWORD` | strong random string for the backend's broker user (variable or secret) |
+| `MQTT_PASSWORD` | strong random string for the backend's broker user (variable or secret); changing it takes effect when the broker container restarts |
 | `DOMAIN` | `puukapp.ee` |
 | `ADMIN_USERNAME` | optional, default `admin` |
 | `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM` | optional |
@@ -79,9 +79,8 @@ everything. Expect two to three minutes.
 Then:
 
 1. Open `https://<domain>/admin`, log in, create your site, products and lockers.
-2. Point each Shelly at `<domain>:1883` with its own broker user (`docs/SHELLY.md`).
-   Add users on the server with `infra/mosquitto/add-user.sh <deviceId> <password> infra/mosquitto/passwd`
-   followed by `docker compose kill -s HUP mosquitto` from `/opt/woodstar`.
+2. Admin → Devices → *Add device* for each Shelly: the app creates its broker login and shows the
+   settings to enter (or send) to the device (`docs/SHELLY.md`). Nothing to do on the server.
 3. Stock a locker, buy it from your phone, open it.
 
 ## Operating

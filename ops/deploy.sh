@@ -2,7 +2,7 @@
 # ops/deploy.sh <image-tag> — release. Runs ON THE SERVER as root (via sudo).
 #
 # 1. renders /opt/woodstar/.env from the environment the workflow passed in
-# 2. makes sure the broker password file has the backend user with the current password
+# 2. (the broker sets the backend's MQTT password itself on start: infra/mosquitto/entrypoint.sh)
 # 3. logs in to GHCR, pulls the tagged images, `compose up`
 # 4. waits for the backend healthcheck and smoke-tests the public URL through Caddy
 # 5. on failure, redeploys the previously live tag (recorded in current-tag) and exits 1
@@ -46,7 +46,6 @@ MAKSEKESKUS_BASE_URL=${MAKSEKESKUS_BASE_URL:-https://api.maksekeskus.ee/v1}
 MQTT_ENABLED=$mqtt_enabled
 MQTT_USERNAME=backend
 MQTT_PASSWORD=$MQTT_PASSWORD
-MQTT_PASSWD_FILE=./infra/mosquitto/passwd
 SMTP_HOST=${SMTP_HOST:-}
 SMTP_PORT=${SMTP_PORT:-587}
 SMTP_USERNAME=${SMTP_USERNAME:-}
@@ -57,16 +56,6 @@ EOF
 }
 
 compose() { docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env "$@"; }
-
-# --- 2. broker password file --------------------------------------------------
-# `mosquitto_passwd -b` creates or updates one entry and leaves the Shelly users alone.
-ensure_broker_user() {
-    docker run --rm -v "$APP_DIR/infra/mosquitto/passwd:/tmp/passwd" eclipse-mosquitto:2 \
-        mosquitto_passwd -b /tmp/passwd backend "$MQTT_PASSWORD" >/dev/null
-    chmod 600 infra/mosquitto/passwd
-    # a running broker re-reads the file on SIGHUP
-    compose kill -s HUP mosquitto >/dev/null 2>&1 || true
-}
 
 # --- 4. checks --------------------------------------------------------------
 wait_healthy() {
@@ -105,7 +94,6 @@ previous=$(cat current-tag 2>/dev/null || true)
 log "deploying $IMAGE_TAG (previous: ${previous:-none})"
 
 echo "$GHCR_PAT" | docker login ghcr.io -u "${GH_ACTOR:-github}" --password-stdin >/dev/null
-ensure_broker_user
 
 if release "$IMAGE_TAG"; then
     echo "$IMAGE_TAG" > current-tag

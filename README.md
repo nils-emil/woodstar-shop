@@ -62,8 +62,7 @@ manual run of the Deploy workflow with an older image tag. Setup and secrets: `d
 2. `PAYMENTS_PROVIDER=maksekeskus`, `MAKSEKESKUS_SHOP_ID` and `MAKSEKESKUS_SECRET_KEY` from the Maksekeskus merchant portal.
    The notification URL `https://<domain>/api/webhooks/maksekeskus` is sent with every transaction, nothing to register.
    For the Maksekeskus test environment set `MAKSEKESKUS_BASE_URL=https://api.test.maksekeskus.ee/v1` with test-shop credentials
-3. MQTT: create `infra/mosquitto/passwd` with a strong backend password (`infra/mosquitto/add-user.sh backend ...`),
-   set `MQTT_PASSWORD` and `MQTT_PASSWD_FILE=./infra/mosquitto/passwd`, add one user per Shelly (`docs/SHELLY.md`)
+3. MQTT: a strong `MQTT_PASSWORD` (the broker applies it on start). Shelly logins are created in admin → Devices (`docs/SHELLY.md`)
 4. SMTP settings so pickup links are actually emailed
 5. `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
 

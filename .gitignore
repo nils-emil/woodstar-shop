@@ -23,7 +23,6 @@ frontend/playwright-report/
 
 # runtime data
 infra/data/
-infra/mosquitto/passwd
 backups/
 current-tag
 .taste-skill/

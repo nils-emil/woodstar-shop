@@ -6,34 +6,40 @@ drives four doors from one device: channels 0–3. The backend pulses the relay 
 `pulse_seconds` (default 2 s) using `Switch.Set` with `toggle_after`, so a door can
 never be left powered open by a dropped connection.
 
-## 1. Broker user for the device
+## 1. Create the device's login in admin
 
-Every device gets its own MQTT username/password. Use the device id (shown in the
-Shelly web UI under *Settings → Device info*, e.g. `shellyplus1-a8032abcdef0`) as the username:
+Admin → *Devices* → **Add device** and enter the device id (Shelly web UI → *Settings → Device info*,
+e.g. `shellyplus1-a8032abcdef0`). The app creates a broker login for it with a random password and shows:
 
-```bash
-infra/mosquitto/add-user.sh shellyplus1-a8032abcdef0 'a-long-random-password' infra/mosquitto/passwd
-docker compose kill -s HUP mosquitto     # reload the password file
-```
+| Setting | Value |
+|---|---|
+| Server | `puukapp.ee:1883` (`MQTT_PUBLIC_HOST`/`MQTT_PUBLIC_PORT`, default: the host of `PUBLIC_BASE_URL`) |
+| Username | the device id |
+| Password | 32 random characters, **shown only this once** |
 
-On a fresh production install create the backend user too:
+Lost it? Press **New password** on the device's row; the old one stops working at once. **Remove login**
+locks a device out. A device that a locker points at but that has no login yet shows *No broker login*
+with a **Create login** button.
 
-```bash
-infra/mosquitto/add-user.sh backend "$MQTT_PASSWORD" infra/mosquitto/passwd
-```
-
-and point `MQTT_PASSWD_FILE=./infra/mosquitto/passwd` in `.env`.
+The broker (Mosquitto Dynamic Security, `infra/mosquitto/`) stores only password hashes, in
+`/mosquitto/data/dynamic-security.json` on the `mosquitto_data` volume. Each device may publish only below
+its own id and to `woodstar-backend/rpc`, so one leaked password cannot open another device's doors.
+The backend is the plugin's admin; `entrypoint.sh` creates it from `MQTT_USERNAME`/`MQTT_PASSWORD` on first
+start and re-applies the password on every start.
 
 ## 2. Shelly MQTT settings
 
-In the Shelly web UI (or app) → *Settings → MQTT*:
+**From your phone (quickest):** connect to the Shelly's own Wi-Fi (`192.168.33.1`) or the network it is on,
+then in the dialog tap *Send settings to the Shelly* and *Reboot the Shelly*. These are plain links to the
+device's local HTTP RPC (`MQTT.SetConfig`, `Shelly.Reboot`); if the device has a web password, the browser asks for it.
+
+**By hand:** Shelly web UI (or app) → *Settings → MQTT*:
 
 | Setting | Value |
 |---|---|
 | Enable MQTT | on |
-| Server | `<your-host>:1883` |
+| Server / Username / Password | from the dialog |
 | Client ID / MQTT prefix | leave as the device id (default) |
-| Username / Password | as created above |
 | Enable RPC over MQTT | **on** |
 | RPC status notifications | on |
 | Generic status update over MQTT | on |
@@ -76,14 +82,16 @@ acknowledges every open after 300 ms. Device ids containing `offline` are report
 and fail, so you can test the error path. The Docker stack runs the real broker; with no
 Shelly connected the open times out after 5 s and the pickup page shows the retry state.
 
-To simulate a device against the real broker (subscribe to the device's own `<deviceId>/rpc`
-topic, never to `+/rpc`: that wildcard also matches the backend's reply topic
-`woodstar-backend/rpc`, and a script that answers everything it hears will loop and flood the broker):
+To simulate a device against the real broker, create its login in admin → Devices first and use that
+password (`PW` below). Subscribe to the device's own `<deviceId>/rpc` topic, never to `+/rpc`: that wildcard also
+matches the backend's reply topic `woodstar-backend/rpc`, and a script that answers everything it hears will loop
+and flood the broker.
 
 ```bash
 # answer the next RPC call as device shellyplus1-dev0001
-docker compose exec mosquitto mosquitto_sub -u backend -P backend -t 'shellyplus1-dev0001/rpc' -C 1
-docker compose exec mosquitto mosquitto_pub -u backend -P backend -t 'woodstar-backend/rpc' \
+D=shellyplus1-dev0001
+docker compose exec mosquitto mosquitto_pub -u $D -P "$PW" -r -t "$D/online" -m true
+docker compose exec mosquitto mosquitto_sub -u $D -P "$PW" -t "$D/rpc" -C 1
+docker compose exec mosquitto mosquitto_pub -u $D -P "$PW" -t 'woodstar-backend/rpc' \
   -m '{"id":1,"src":"shellyplus1-dev0001","dst":"woodstar-backend","result":{"was_on":false}}'
-docker compose exec mosquitto mosquitto_pub -u backend -P backend -r -t 'shellyplus1-dev0001/online' -m true
 ```

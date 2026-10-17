@@ -21,6 +21,7 @@ Read `docs/SPEC.md` before changing domain logic; it is the contract between bac
 - Every visible UI string goes through `t()` with both `et` and `en` keys in `frontend/src/i18n/`.
 - Money is integer cents, prices include 24 % VAT. Timestamps are `Instant` / `TIMESTAMPTZ`.
 - Never publish on Paho's callback thread. Relay commands are always pulses (`toggle_after`), never plain on.
+- Shelly broker logins are created by the app (admin → Devices) via Mosquitto Dynamic Security; no hand-made password files.
 - Schema changes are new Flyway migrations (`V<n>__snake_case.sql`); never edit an applied migration.
 
 ## Verify
