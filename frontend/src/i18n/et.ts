@@ -32,7 +32,7 @@ export const et = {
   step2: 'Avamislink tuleb e-postile',
   step3: 'Kapi juures vajuta lingil „Ava kapiuks“',
   salesClosed: 'Müük avatakse peagi. Kapid ja kotid on juba näha, tellida saab varsti.',
-  demoNotice: 'Demo: makset ei võeta ja kapiuks avaneb näidisena.',
+  demoNotice: 'Demo: makset ei võeta. Kapiuks avaneb päriselt.',
   mapLabel: 'Asukohad kaardil',
   invalidEmail: 'Palun sisesta korrektne e-posti aadress',
   noSites: 'Ühtegi asukohta pole hetkel saadaval.',
@@ -234,7 +234,7 @@ export const et = {
   deviceAddress: 'Shelly aadress',
   sendSettings: '1. Saada seaded Shellyle',
   rebootDevice: '2. Taaskäivita Shelly',
-  loginNotLive: 'Selles serveris on uksed simuleeritud (demo). Sisselogimine salvestati, kuid broker seda ei kontrolli.',
+  loginNotLive: 'Selles serveris on MQTT välja lülitatud (kohalik arendus), uksed on simuleeritud. Sisselogimine salvestati, kuid broker seda ei kontrolli.',
 } as const
 
 export type TranslationKey = keyof typeof et

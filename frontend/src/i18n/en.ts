@@ -32,7 +32,7 @@ export const en: Record<TranslationKey, string> = {
   step2: 'The opening link arrives by email',
   step3: 'At the locker, press “Open locker” in the link',
   salesClosed: 'Sales open soon. You can already see the lockers and bags; ordering starts shortly.',
-  demoNotice: 'Demo: no money is taken and the door opens as a simulation.',
+  demoNotice: 'Demo: no money is taken. The locker door really opens.',
   mapLabel: 'Locations on the map',
   invalidEmail: 'Please enter a valid email address',
   noSites: 'No locations are available right now.',
@@ -220,5 +220,5 @@ export const en: Record<TranslationKey, string> = {
   deviceAddress: 'Shelly address',
   sendSettings: '1. Send settings to the Shelly',
   rebootDevice: '2. Reboot the Shelly',
-  loginNotLive: 'Doors are simulated on this server (demo). The login is saved, but no broker checks it.',
+  loginNotLive: 'MQTT is off on this server (local development), so doors are simulated. The login is saved, but no broker checks it.',
 }

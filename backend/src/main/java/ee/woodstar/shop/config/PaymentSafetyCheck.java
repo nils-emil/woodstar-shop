@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Refuses to start production with the fake provider, which marks every order paid without taking
- * money, unless demo mode is switched on explicitly (a test server shown to people, no real lockers).
+ * money, unless demo mode is switched on explicitly (a test server: no money taken, but the doors are real).
  */
 @Slf4j
 @Component

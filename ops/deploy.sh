@@ -21,9 +21,8 @@ log() { echo "==> $*"; }
 # Only rendered from the workflow's environment; nothing secret is stored in git.
 render_env() {
     # Without Maksekeskus keys the shop runs with sales closed (provider "none"), never "fake".
-    # DEMO_MODE=true (test servers only): mocked payments and mocked doors, for showing the shop.
-    mqtt_enabled=true
-    if [ "${DEMO_MODE:-false}" = true ]; then provider=fake; mqtt_enabled=false
+    # DEMO_MODE=true (test servers only): mocked payments. Doors are always real (MQTT is never off on a server).
+    if [ "${DEMO_MODE:-false}" = true ]; then provider=fake
     elif [ -n "${MAKSEKESKUS_SHOP_ID:-}" ] && [ -n "${MAKSEKESKUS_SECRET_KEY:-}" ]; then provider=maksekeskus
     else provider=none; fi
     umask 077
@@ -43,7 +42,7 @@ DEMO_MODE=${DEMO_MODE:-false}
 MAKSEKESKUS_SHOP_ID=${MAKSEKESKUS_SHOP_ID:-}
 MAKSEKESKUS_SECRET_KEY=${MAKSEKESKUS_SECRET_KEY:-}
 MAKSEKESKUS_BASE_URL=${MAKSEKESKUS_BASE_URL:-https://api.maksekeskus.ee/v1}
-MQTT_ENABLED=$mqtt_enabled
+MQTT_ENABLED=true
 MQTT_USERNAME=backend
 MQTT_PASSWORD=$MQTT_PASSWORD
 SMTP_HOST=${SMTP_HOST:-}

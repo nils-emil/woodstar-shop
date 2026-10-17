@@ -92,7 +92,7 @@ woodstar:
   order:
     reservation-ttl-minutes: 15
   seed-demo-data: false
-  # Demo mode (test servers only): mocked payments and mocked locker doors, allowed even with the prod profile.
+  # Demo mode (test servers only): mocked payments, allowed even with the prod profile. Doors stay real.
   demo-mode: ${DEMO_MODE:false}
 
 logging:

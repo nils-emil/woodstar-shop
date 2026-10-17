@@ -105,7 +105,7 @@ Use `org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5`, automatic reconnect
       record OpenResult(boolean ok, String detail) {}
   }
   ```
-- `FakeLockerController` (active when `woodstar.mqtt.enabled=false`): always online, returns ok after 300 ms, except device ids containing `offline` (reports offline + fails) — used by tests and local demo.
+- `FakeLockerController` (active when `woodstar.mqtt.enabled=false`): always online, returns ok after 300 ms, except device ids containing `offline` (reports offline + fails) — used by tests and local development only. The `prod` profile refuses to start with MQTT off (`LockerSafetyCheck`), so a server never mocks doors.
 
 ## Payment contract
 
